@@ -1,0 +1,108 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <div class="mb-6">
+        <a href="{% url 'hackathon_detail' pk=team.hackathon.pk %}" class="text-gray-400 hover:text-white text-sm flex items-center gap-1 mb-4">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+            Back to Hackathon
+        </a>
+    </div>
+
+    <div class="glass-card rounded-2xl p-8 mb-8">
+        <div class="flex items-center justify-between mb-6">
+            <div>
+                <h1 class="text-3xl font-bold text-white mb-1">{{ team.name }}</h1>
+                <p class="text-indigo-400 text-sm">Participating in {{ team.hackathon.title }}</p>
+            </div>
+             {% if is_leader %}
+                <span class="px-3 py-1 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 text-xs font-bold uppercase tracking-wider">Team Leader</span>
+            {% endif %}
+        </div>
+        
+        <h3 class="font-bold text-white mb-2">About Team</h3>
+        <p class="text-gray-400 leading-relaxed mb-8">{{ team.description|default:"No description provided." }}</p>
+
+        <!-- Members -->
+        <h3 class="font-bold text-white mb-4">Team Members ({{ team.members.count }}/{{ team.hackathon.max_team_size }})</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {% for member in team.members.all %}
+                <div class="p-4 rounded-xl bg-gray-800/50 flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-full bg-gray-700 overflow-hidden">
+                        {% if member.user.avatar %}
+                            <img src="{{ member.user.avatar.url }}" class="w-full h-full object-cover">
+                        {% else %}
+                            <div class="w-full h-full flex items-center justify-center font-bold">{{ member.user.username|slice:":1"|upper }}</div>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-white">{{ member.user.get_full_name|default:member.user.username }}</h4>
+                        <p class="text-xs text-gray-500">{{ member.role|title }}</p>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    {% if is_leader and join_requests %}
+        <div class="glass-card rounded-2xl p-8">
+            <h3 class="font-bold text-white mb-6">Join Requests</h3>
+            <div class="space-y-4">
+                {% for req in join_requests %}
+                    <div class="flex items-center justify-between p-4 rounded-xl bg-gray-800/50 border border-gray-700">
+                        <div class="flex items-center gap-4">
+                            <div class="w-10 h-10 rounded-full bg-gray-700 overflow-hidden">
+                                {% if req.user.avatar %}
+                                    <img src="{{ req.user.avatar.url }}" class="w-full h-full object-cover">
+                                {% else %}
+                                    <div class="w-full h-full flex items-center justify-center font-bold">{{ req.user.username|slice:":1"|upper }}</div>
+                                {% endif %}
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-white">{{ req.user.get_full_name|default:req.user.username }}</h4>
+                                <p class="text-xs text-gray-400">{{ req.message|default:"Wants to join your team." }}</p>
+                            </div>
+                        </div>
+                        <div class="flex gap-2">
+                            <form action="{% url 'handle_join_request' pk=req.pk action='accept' %}" method="post">
+                                {% csrf_token %}
+                                <button type="submit" class="px-4 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white text-sm font-bold transition-colors">Accept</button>
+                            </form>
+                             <form action="{% url 'handle_join_request' pk=req.pk action='reject' %}" method="post">
+                                {% csrf_token %}
+                                <button type="submit" class="px-4 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 text-gray-300 text-sm font-bold transition-colors">Decline</button>
+                            </form>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- Join Button for non-members -->
+    {% if not is_member and not is_leader %}
+        <div class="glass-card rounded-2xl p-8">
+            {% if has_requested %}
+                <div class="text-center">
+                    <span class="px-6 py-3 rounded-xl bg-yellow-500/20 text-yellow-300 border border-yellow-500/30 font-bold inline-flex items-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        Request Pending
+                    </span>
+                    <p class="text-sm text-gray-400 mt-3">The team leader will review your request.</p>
+                </div>
+            {% elif team.is_open %}
+                <h3 class="font-bold text-white mb-4">Want to join this team?</h3>
+                <form action="{% url 'join_team' pk=team.pk %}" method="post" class="space-y-4">
+                    {% csrf_token %}
+                    <textarea name="message" rows="3" placeholder="Introduce yourself and why you'd like to join..." class="w-full bg-gray-800 border-gray-700 rounded-lg text-white p-3 focus:ring-indigo-500 placeholder-gray-500"></textarea>
+                    <button type="submit" class="px-6 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold transition-colors shadow-lg shadow-indigo-500/30">
+                        Send Join Request
+                    </button>
+                </form>
+            {% else %}
+                <p class="text-gray-500 text-center">This team is not accepting new members.</p>
+            {% endif %}
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

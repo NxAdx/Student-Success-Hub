@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto">
+    <div class="glass-card p-8 rounded-2xl">
+        <h1 class="text-2xl font-bold text-white mb-6">Create New Session</h1>
+        
+        <form method="post" class="space-y-6">
+            {% csrf_token %}
+            
+            <div>
+                <label class="block text-sm text-gray-400 mb-2">Session Title</label>
+                <input type="text" name="title" required class="w-full bg-gray-800 border-gray-700 rounded-lg text-white p-3 focus:ring-indigo-500" placeholder="e.g., Career Guidance for CS Students">
+            </div>
+
+            <div>
+                <label class="block text-sm text-gray-400 mb-2">Description</label>
+                <textarea name="description" rows="4" required class="w-full bg-gray-800 border-gray-700 rounded-lg text-white p-3 focus:ring-indigo-500" placeholder="What will be covered in this session?"></textarea>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                     <label class="block text-sm text-gray-400 mb-2">Date & Time</label>
+                    <input type="text" name="scheduled_at" required class="w-full bg-gray-800 border-gray-700 rounded-lg text-white p-3 focus:ring-indigo-500 cursor-pointer" placeholder="Select Date and Time...">
+                </div>
+                <div>
+                    <label class="block text-sm text-gray-400 mb-2">Duration (minutes)</label>
+                    <input type="number" name="duration" value="60" min="15" step="15" required class="w-full bg-gray-800 border-gray-700 rounded-lg text-white p-3 focus:ring-indigo-500">
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm text-gray-400 mb-2">Session Type</label>
+                    <select name="session_type" class="w-full bg-gray-800 border-gray-700 rounded-lg text-white p-3 focus:ring-indigo-500">
+                        <option value="one_on_one">One-on-One</option>
+                        <option value="group">Group Session</option>
+                        <option value="webinar">Webinar</option>
+                    </select>
+                </div>
+                 <div>
+                    <label class="block text-sm text-gray-400 mb-2">Max Participants</label>
+                    <input type="number" name="max_participants" value="1" min="1" required class="w-full bg-gray-800 border-gray-700 rounded-lg text-white p-3 focus:ring-indigo-500">
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-sm text-gray-400 mb-2">Meeting Link</label>
+                <input type="url" name="meeting_link" required class="w-full bg-gray-800 border-gray-700 rounded-lg text-white p-3 focus:ring-indigo-500" placeholder="Zoom/Google Meet/etc. link">
+            </div>
+
+            <div class="pt-4">
+                <button type="submit" class="w-full py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold transition-colors shadow-lg shadow-indigo-500/20">
+                    Create Session
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Flatpickr for better Date Time Picker -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<link rel="stylesheet" href="https://npmcdn.com/flatpickr/dist/themes/dark.css">
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script>
+    flatpickr("input[name='scheduled_at']", {
+        enableTime: true,
+        dateFormat: "Y-m-d H:i",
+        minDate: "today",
+        time_24hr: true,
+        theme: "dark",
+        disableMobile: "true" // Force custom picker on mobile too for consistency
+    });
+</script>
+{% endblock %}

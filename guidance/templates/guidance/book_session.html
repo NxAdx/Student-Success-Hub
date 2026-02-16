@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="max-w-md mx-auto py-12">
+    <div class="glass-card p-8 rounded-2xl shadow-xl">
+        <h2 class="text-2xl font-bold text-center text-white mb-2">Confirm Booking</h2>
+        <p class="text-center text-gray-400 mb-8 text-sm">You are about to book a session for:</p>
+
+        <div class="bg-indigo-500/10 border border-indigo-500/20 rounded-xl p-4 mb-8 text-center">
+            <h3 class="font-bold text-white text-lg mb-1">{{ session.title }}</h3>
+            <p class="text-indigo-300 text-sm mb-2">with {{ session.mentor.get_full_name }}</p>
+            <div class="text-xs text-gray-400">
+                {{ session.scheduled_at|date:"l, F d, Y" }} at {{ session.scheduled_at|time:"h:i A" }}
+            </div>
+        </div>
+        
+        <form method="post" class="space-y-4">
+            {% csrf_token %}
+            
+            <div class="bg-gray-800/50 p-4 rounded-lg mb-4">
+                 <label class="flex items-start gap-3 cursor-pointer">
+                    <input type="checkbox" required class="mt-1 rounded border-gray-600 bg-gray-700 text-indigo-600 focus:ring-indigo-500">
+                    <span class="text-sm text-gray-400">I confirm that I will attend this session at the scheduled time.</span>
+                </label>
+            </div>
+
+            <div class="flex gap-4">
+                <a href="{% url 'session_detail' pk=session.pk %}" class="flex-1 py-3 px-4 rounded-xl bg-gray-700 hover:bg-gray-600 text-white font-bold text-center transition-colors">Cancel</a>
+                <button type="submit" class="flex-1 py-3 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold transition-all shadow-lg shadow-indigo-500/30">
+                    Confirm Booking
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

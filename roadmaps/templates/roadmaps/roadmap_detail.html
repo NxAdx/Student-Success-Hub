@@ -1,0 +1,171 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto space-y-6">
+    <!-- Header -->
+    <div style="display:flex; align-items:flex-start; justify-content:space-between; flex-wrap:wrap; gap:1rem;">
+        <div>
+            <a href="{% url 'roadmaps:roadmap_list' %}" style="color:#818cf8; text-decoration:none; font-size:13px; font-weight:600; display:inline-flex; align-items:center; gap:4px; margin-bottom:0.5rem;">
+                <svg style="width:14px;height:14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+                Back to Roadmaps
+            </a>
+            <h1 style="font-size:1.5rem; font-weight:800; color:white; margin:0;">{{ roadmap.title }}</h1>
+            <p style="color:#9ca3af; margin-top:0.25rem; font-size:14px;">{{ roadmap.description }}</p>
+            <div style="margin-top:0.5rem; display:flex; align-items:center; gap:0.75rem;">
+                <span style="font-size:11px; font-weight:700; padding:3px 8px; border-radius:6px; background:rgba(99,102,241,0.15); color:#818cf8;">{{ roadmap.get_category_display }}</span>
+                <span style="font-size:12px; color:#6b7280;">by {{ roadmap.created_by.get_full_name|default:roadmap.created_by.username }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Progress Bar -->
+    <div style="background:rgba(31,41,55,0.6); border:1px solid rgba(75,85,99,0.4); border-radius:1rem; padding:1.25rem;">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:0.5rem;">
+            <span style="font-size:14px; font-weight:700; color:white;">Your Progress</span>
+            <span style="font-size:13px; color:#818cf8; font-weight:700;" id="progress-text">{{ done_nodes }}/{{ total_nodes }} completed ({{ percent }}%)</span>
+        </div>
+        <div style="height:8px; background:rgba(55,65,81,0.6); border-radius:9999px; overflow:hidden;">
+            <div id="progress-bar" style="height:100%; background:linear-gradient(90deg, #6366f1, #8b5cf6); border-radius:9999px; transition:width 0.5s; width:{{ percent }}%;"></div>
+        </div>
+    </div>
+
+    <!-- Visual Flowchart -->
+    <div id="roadmap-flowchart" style="position:relative; padding:2rem 0;"></div>
+</div>
+
+<style>
+    .roadmap-node {
+        position: relative;
+        background: rgba(31,41,55,0.8);
+        border: 2px solid rgba(75,85,99,0.5);
+        border-radius: 12px;
+        padding: 1rem 1.25rem;
+        margin: 0 auto 0.5rem auto;
+        max-width: 420px;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    .roadmap-node:hover { border-color: #6366f1; transform: translateY(-1px); }
+    .roadmap-node.status-done { border-color: #22c55e; background: rgba(34,197,94,0.05); }
+    .roadmap-node.status-in_progress { border-color: #f59e0b; background: rgba(245,158,11,0.05); }
+    .roadmap-node.status-skipped { border-color: #6b7280; opacity: 0.6; }
+    .node-connector {
+        width: 2px; height: 28px; background: rgba(99,102,241,0.3); margin: 0 auto;
+    }
+    .node-connector.status-done { background: #22c55e; }
+    .node-dot {
+        width: 12px; height: 12px; border-radius: 50%; margin: 0 auto; position: relative; z-index: 2;
+    }
+    .node-dot.status-not_started { background: rgba(75,85,99,0.6); border: 2px solid #4b5563; }
+    .node-dot.status-in_progress { background: #f59e0b; border: 2px solid #fbbf24; box-shadow: 0 0 8px rgba(245,158,11,0.4); }
+    .node-dot.status-done { background: #22c55e; border: 2px solid #4ade80; box-shadow: 0 0 8px rgba(34,197,94,0.4); }
+    .node-dot.status-skipped { background: #6b7280; border: 2px solid #9ca3af; }
+    .status-menu {
+        position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
+        display: flex; gap: 4px;
+    }
+    .status-btn {
+        width: 28px; height: 28px; border-radius: 8px; border: none; cursor: pointer;
+        display: flex; align-items: center; justify-content: center; font-size: 13px;
+        transition: all 0.15s; opacity: 0.4;
+    }
+    .status-btn:hover { opacity: 1; transform: scale(1.1); }
+    .status-btn.active { opacity: 1; }
+    .node-resources { margin-top: 0.5rem; font-size: 12px; color: #818cf8; word-break: break-all; }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const nodes = {{ nodes_json|safe }};
+    const container = document.getElementById('roadmap-flowchart');
+    const csrfToken = '{{ csrf_token }}';
+    const progressUrl = '{% url "roadmaps:toggle_node_progress" pk=roadmap.pk %}';
+
+    // Sort by order
+    nodes.sort((a, b) => a.order - b.order);
+
+    // Separate root nodes and children
+    const roots = nodes.filter(n => !n.parent_id);
+    const childMap = {};
+    nodes.forEach(n => {
+        if (n.parent_id) {
+            if (!childMap[n.parent_id]) childMap[n.parent_id] = [];
+            childMap[n.parent_id].push(n);
+        }
+    });
+
+    function renderNode(node, depth) {
+        let html = '';
+        if (depth > 0) {
+            html += `<div class="node-connector ${node.progress === 'done' ? 'status-done' : ''}"></div>`;
+        }
+        html += `<div class="node-dot status-${node.progress}"></div>`;
+        html += `<div class="node-connector ${node.progress === 'done' ? 'status-done' : ''}" style="height:12px;"></div>`;
+        html += `<div class="roadmap-node status-${node.progress}" data-node-id="${node.id}" style="margin-left:${depth * 30}px;">`;
+        html += `<div style="display:flex; align-items:center; gap:0.5rem; padding-right:100px;">`;
+        html += `<span style="font-weight:700; color:white; font-size:14px;">${node.title}</span>`;
+        html += `</div>`;
+        if (node.description) {
+            html += `<p style="font-size:12px; color:#9ca3af; margin:0.25rem 0 0 0;">${node.description}</p>`;
+        }
+        if (node.resources_text) {
+            html += `<div class="node-resources">📎 ${node.resources_text}</div>`;
+        }
+        // Status buttons
+        html += `<div class="status-menu">`;
+        html += statusBtn(node, 'in_progress', '🔄');
+        html += statusBtn(node, 'done', '✅');
+        html += statusBtn(node, 'skipped', '⏭️');
+        html += `</div>`;
+        html += `</div>`;
+
+        // Render children
+        const children = childMap[node.id] || [];
+        children.sort((a, b) => a.order - b.order);
+        children.forEach(child => { html += renderNode(child, depth + 1); });
+
+        return html;
+    }
+
+    function statusBtn(node, status, emoji) {
+        const isActive = node.progress === status;
+        return `<button class="status-btn ${isActive ? 'active' : ''}" data-node-id="${node.id}" data-status="${status}" 
+                title="${status.replace('_',' ')}"
+                style="background:${isActive ? 'rgba(99,102,241,0.2)' : 'rgba(55,65,81,0.5)'};">${emoji}</button>`;
+    }
+
+    let html = '';
+    roots.forEach(root => { html += renderNode(root, 0); });
+    container.innerHTML = html;
+
+    // Click handlers for status buttons
+    container.addEventListener('click', function(e) {
+        const btn = e.target.closest('.status-btn');
+        if (!btn) return;
+        e.stopPropagation();
+        const nodeId = parseInt(btn.dataset.nodeId);
+        const newStatus = btn.dataset.status;
+        const node = nodes.find(n => n.id === nodeId);
+        // Toggle off if already active
+        const finalStatus = (node.progress === newStatus) ? 'not_started' : newStatus;
+
+        fetch(progressUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
+            body: JSON.stringify({ node_id: nodeId, status: finalStatus })
+        })
+        .then(r => r.json())
+        .then(data => {
+            node.progress = data.status;
+            // Re-render
+            let newHtml = '';
+            roots.forEach(root => { newHtml += renderNode(root, 0); });
+            container.innerHTML = newHtml;
+            // Update progress bar
+            document.getElementById('progress-text').textContent = `${data.done}/${data.total} completed (${data.percent}%)`;
+            document.getElementById('progress-bar').style.width = data.percent + '%';
+        });
+    });
+});
+</script>
+{% endblock %}

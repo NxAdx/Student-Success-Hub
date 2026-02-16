@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div>
+        <h1 class="text-3xl font-bold text-white mb-2">Resource Library</h1>
+        <p class="text-gray-400">Curated educational content to boost your learning.</p>
+    </div>
+    <a href="{% url 'add_resource' %}" class="px-6 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-medium transition-colors shadow-lg shadow-indigo-500/20 flex items-center justify-center gap-2">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+        Upload Resource
+    </a>
+</div>
+
+<!-- Category Pills -->
+<div class="flex flex-wrap gap-3 mb-8">
+    <a href="{% url 'resource_list' %}" class="px-4 py-2 rounded-full border border-gray-700 hover:bg-white/10 text-sm font-medium transition-colors {% if not selected_category %}bg-white text-gray-900 border-white{% else %}text-gray-300{% endif %}">All</a>
+    {% for cat in categories %}
+        <a href="?category={{ cat.id }}" class="px-4 py-2 rounded-full border border-gray-700 hover:bg-white/10 text-sm font-medium transition-colors {% if selected_category == cat.id|stringformat:'i' %}bg-indigo-500 border-indigo-500 text-white{% else %}text-gray-300{% endif %}">
+            {{ cat.name }}
+        </a>
+    {% endfor %}
+</div>
+
+<!-- Resource Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    {% for res in resources %}
+        <div class="glass-card rounded-xl overflow-hidden hover:bg-white/5 transition-colors group flex flex-col h-full">
+            <a href="{% url 'resource_detail' pk=res.pk %}" class="block relative aspect-video bg-gray-800 overflow-hidden">
+                {% if res.thumbnail %}
+                    <img src="{{ res.thumbnail.url }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                {% else %}
+                    <div class="w-full h-full flex items-center justify-center text-gray-600">
+                        <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+                    </div>
+                {% endif %}
+                <div class="absolute top-2 right-2 flex gap-2">
+                    <span class="bg-black/60 backdrop-blur-sm px-2 py-0.5 rounded text-xs text-white font-medium capitalize">{{ res.resource_type }}</span>
+                    <span class="bg-indigo-600/80 backdrop-blur-sm px-2 py-0.5 rounded text-xs text-white font-medium capitalize">{{ res.difficulty }}</span>
+                </div>
+            </a>
+            <div class="p-5 flex-grow flex flex-col">
+                <div class="mb-2">
+                    <span class="text-xs text-indigo-400 font-medium tracking-wide uppercase">{{ res.category.name|default:"General" }}</span>
+                </div>
+                <h3 class="font-bold text-white text-lg mb-2 line-clamp-2 group-hover:text-indigo-400 transition-colors">
+                    <a href="{% url 'resource_detail' pk=res.pk %}">{{ res.title }}</a>
+                </h3>
+                <p class="text-gray-400 text-sm line-clamp-2 mb-4 flex-grow">{{ res.description }}</p>
+                <div class="flex items-center justify-between text-xs text-gray-500 border-t border-gray-700 pt-4">
+                    <span class="flex items-center gap-1">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                        {{ res.views_count }} views
+                    </span>
+                    <span>{{ res.created_at|timesince }} ago</span>
+                </div>
+            </div>
+        </div>
+    {% empty %}
+        <p class="col-span-full text-center text-gray-500 py-12">No resources found.</p>
+    {% endfor %}
+</div>
+{% endblock %}

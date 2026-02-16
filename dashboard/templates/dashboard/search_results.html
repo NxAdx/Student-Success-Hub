@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <h1 class="text-3xl font-bold text-white mb-8">Search Results for "{{ query }}"</h1>
+
+    {% if not users and not resources and not questions %}
+        <div class="text-center py-12 text-gray-500">
+            <p>No results found try a different search term.</p>
+        </div>
+    {% endif %}
+
+    {% if users %}
+        <div class="mb-8">
+            <h2 class="text-xl font-bold text-white mb-4">People</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {% for person in users %}
+                    <div class="glass-card p-4 rounded-xl flex items-center justify-between hover:bg-white/5 transition-colors group">
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 rounded-full bg-gray-800 flex-shrink-0 overflow-hidden border border-gray-700">
+                                {% if person.avatar %}
+                                    <img src="{{ person.avatar.url }}" class="w-full h-full object-cover">
+                                {% else %}
+                                    <div class="w-full h-full flex items-center justify-center font-bold text-white">{{ person.username|slice:":1"|upper }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="min-w-0">
+                                <h3 class="font-bold text-white truncate">
+                                    <a href="{% url 'user_profile' username=person.username %}" class="hover:text-indigo-400 transition-colors">{{ person.get_full_name|default:person.username }}</a>
+                                </h3>
+                                <p class="text-xs text-gray-400">{{ person.get_role_display }}</p>
+                            </div>
+                        </div>
+                        
+                        </div>
+                        
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    {% endif %}
+
+    {% if resources %}
+        <div class="mb-8">
+            <h2 class="text-xl font-bold text-white mb-4">Resources</h2>
+            <div class="space-y-4">
+                {% for res in resources %}
+                    <div class="glass-card p-4 rounded-xl hover:bg-white/5 transition-colors">
+                        <h3 class="font-bold text-white mb-1">
+                            <a href="{% url 'resource_detail' pk=res.pk %}" class="hover:text-indigo-400">{{ res.title }}</a>
+                        </h3>
+                        <p class="text-sm text-gray-400 line-clamp-2">{{ res.description }}</p>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    {% endif %}
+
+    {% if questions %}
+        <div class="mb-8">
+            <h2 class="text-xl font-bold text-white mb-4">Discussions</h2>
+            <div class="space-y-4">
+                {% for q in questions %}
+                    <div class="glass-card p-4 rounded-xl hover:bg-white/5 transition-colors">
+                        <h3 class="font-bold text-white mb-1">
+                            <a href="{% url 'question_detail' pk=q.pk %}" class="hover:text-indigo-400">{{ q.title }}</a>
+                        </h3>
+                        <p class="text-sm text-gray-400 line-clamp-2">{{ q.body }}</p>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    {% endif %}
+
+    {% if groups %}
+        <div class="mb-8">
+            <h2 class="text-xl font-bold text-white mb-4">Support Groups</h2>
+            <div class="space-y-4">
+                {% for group in groups %}
+                    <div class="glass-card p-4 rounded-xl hover:bg-white/5 transition-colors">
+                        <h3 class="font-bold text-white mb-1">
+                            <a href="{% url 'chat_room' pk=group.pk %}" class="hover:text-indigo-400">{{ group.name }}</a>
+                        </h3>
+                        <p class="text-sm text-gray-400 line-clamp-2">{{ group.description }}</p>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

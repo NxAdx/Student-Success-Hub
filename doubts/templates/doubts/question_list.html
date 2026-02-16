@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="mb-8 flex flex-col md:flex-row justify-between items-center gap-4">
+    <div>
+        <h1 class="text-3xl font-bold text-white mb-2">Doubt Clearing & Discussion</h1>
+        <p class="text-gray-400">Ask questions, get answers, and help others learn.</p>
+    </div>
+    <a href="{% url 'ask_question' %}" class="px-6 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-medium transition-colors shadow-lg shadow-indigo-500/20">
+        Ask a Question
+    </a>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+    <!-- Filters -->
+     <div class="lg:col-span-1">
+        <div class="glass-card p-6 rounded-xl sticky top-24">
+            <h3 class="font-bold text-white mb-4">Tags</h3>
+            <div class="flex flex-wrap gap-2">
+                <a href="{% url 'question_list' %}" class="px-3 py-1 rounded-full border border-gray-700 hover:bg-white/10 text-xs text-gray-400 hover:text-white transition-colors">All</a>
+                <!-- Static tags for demo, would be dynamic in real app -->
+                 <a href="?tag=python" class="px-3 py-1 rounded-full border border-gray-700 hover:bg-white/10 text-xs text-gray-400 hover:text-white transition-colors">#python</a>
+                 <a href="?tag=django" class="px-3 py-1 rounded-full border border-gray-700 hover:bg-white/10 text-xs text-gray-400 hover:text-white transition-colors">#django</a>
+                 <a href="?tag=career" class="px-3 py-1 rounded-full border border-gray-700 hover:bg-white/10 text-xs text-gray-400 hover:text-white transition-colors">#career</a>
+                 <a href="?tag=internship" class="px-3 py-1 rounded-full border border-gray-700 hover:bg-white/10 text-xs text-gray-400 hover:text-white transition-colors">#internship</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Questions List -->
+    <div class="lg:col-span-3 space-y-4">
+        {% for question in questions %}
+            <div class="glass-card p-6 rounded-xl hover:bg-white/5 transition-colors group">
+                <div class="flex items-start gap-4">
+                    <div class="flex flex-col items-center gap-1 text-gray-500 w-12 pt-1">
+                        <span class="text-lg font-bold {% if question.answers.count > 0 %}text-green-400{% endif %}">{{ question.answers.count }}</span>
+                        <span class="text-xs">ans</span>
+                    </div>
+                    <div class="flex-grow">
+                        <h3 class="text-xl font-bold text-white mb-2 group-hover:text-indigo-400 transition-colors">
+                            <a href="{% url 'question_detail' pk=question.pk %}">{{ question.title }}</a>
+                        </h3>
+                        <p class="text-gray-400 text-sm line-clamp-2 mb-3">{{ question.body }}</p>
+                        
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                {% for tag in question.tags_list %}
+                                    <span class="px-2 py-0.5 rounded bg-gray-800 text-gray-400 text-xs">#{{ tag }}</span>
+                                {% endfor %}
+                            </div>
+                            <div class="flex items-center gap-2 text-xs text-gray-500">
+                                <span>asked {{ question.created_at|timesince }} ago by</span>
+                                <span class="text-indigo-400 font-medium">{{ question.user.username }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+             <div class="text-center py-12">
+                <svg class="w-16 h-16 mx-auto text-gray-600 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                <p class="text-gray-500">No questions yet. Be the first to ask!</p>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

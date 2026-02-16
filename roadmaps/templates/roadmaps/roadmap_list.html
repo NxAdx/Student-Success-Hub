@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto space-y-8">
+    <!-- Header -->
+    <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:1rem;">
+        <div>
+            <h1 style="font-size:1.75rem; font-weight:800; color:white; margin:0;">🗺️ Learning Roadmaps</h1>
+            <p style="color:#9ca3af; margin-top:0.25rem;">Follow structured paths to master new skills</p>
+        </div>
+        <div style="display:flex; gap:0.5rem;">
+            <a href="{% url 'roadmaps:create_roadmap' %}"
+               style="padding:10px 20px; border-radius:10px; background:#4f46e5; color:white; font-weight:600; font-size:14px; text-decoration:none; transition:all 0.2s; display:flex; align-items:center; gap:6px;">
+                <svg style="width:16px;height:16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                Create Roadmap
+            </a>
+            {% if user.is_staff %}
+            <a href="{% url 'roadmaps:admin_review' %}"
+               style="padding:10px 20px; border-radius:10px; background:rgba(245,158,11,0.15); color:#fbbf24; font-weight:600; font-size:14px; text-decoration:none; border:1px solid rgba(245,158,11,0.3);">
+                ⚙️ Review
+            </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Category Filter -->
+    <div style="display:flex; flex-wrap:wrap; gap:6px;">
+        <a href="{% url 'roadmaps:roadmap_list' %}"
+           style="padding:6px 14px; border-radius:8px; font-size:13px; font-weight:600; text-decoration:none; transition:all 0.15s; {% if not selected_category %}background:#4f46e5; color:white;{% else %}background:rgba(55,65,81,0.5); color:#9ca3af;{% endif %}">
+            All
+        </a>
+        {% for val, label in categories %}
+        <a href="{% url 'roadmaps:roadmap_list' %}?category={{ val }}"
+           style="padding:6px 14px; border-radius:8px; font-size:13px; font-weight:600; text-decoration:none; transition:all 0.15s; {% if selected_category == val %}background:#4f46e5; color:white;{% else %}background:rgba(55,65,81,0.5); color:#9ca3af;{% endif %}">
+            {{ label }}
+        </a>
+        {% endfor %}
+    </div>
+
+    <!-- My Drafts/Pending -->
+    {% if my_roadmaps %}
+    <div>
+        <h2 style="font-size:1rem; font-weight:700; color:#fbbf24; margin-bottom:0.75rem;">📝 My Drafts & Pending</h2>
+        <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:1rem;">
+            {% for rm in my_roadmaps %}
+            <div style="background:rgba(31,41,55,0.6); border:1px solid rgba(75,85,99,0.4); border-radius:1rem; padding:1.25rem; transition:all 0.2s;">
+                <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:0.5rem;">
+                    <span style="font-size:11px; font-weight:700; padding:3px 8px; border-radius:6px;
+                        {% if rm.status == 'pending' %}background:rgba(245,158,11,0.15); color:#fbbf24;
+                        {% elif rm.status == 'rejected' %}background:rgba(239,68,68,0.15); color:#f87171;
+                        {% else %}background:rgba(107,114,128,0.2); color:#9ca3af;{% endif %}">
+                        {{ rm.get_status_display }}
+                    </span>
+                    <span style="font-size:11px; color:#6b7280;">{{ rm.node_count }} nodes</span>
+                </div>
+                <h3 style="font-weight:700; color:white; margin:0 0 0.25rem 0;">{{ rm.title }}</h3>
+                <p style="font-size:13px; color:#9ca3af; margin:0 0 0.75rem 0;">{{ rm.description|truncatechars:80 }}</p>
+                {% if rm.status == 'rejected' and rm.rejection_feedback %}
+                <p style="font-size:12px; color:#f87171; background:rgba(239,68,68,0.1); padding:6px 10px; border-radius:8px; margin-bottom:0.75rem;">
+                    Feedback: {{ rm.rejection_feedback }}
+                </p>
+                {% endif %}
+                <a href="{% url 'roadmaps:edit_roadmap' pk=rm.pk %}"
+                   style="font-size:13px; color:#818cf8; text-decoration:none; font-weight:600;">Edit →</a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Published Roadmaps -->
+    <div>
+        <h2 style="font-size:1rem; font-weight:700; color:white; margin-bottom:0.75rem;">🌟 Published Roadmaps</h2>
+        <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(300px, 1fr)); gap:1rem;">
+            {% for rm in roadmaps %}
+            <a href="{% url 'roadmaps:roadmap_detail' pk=rm.pk %}" style="text-decoration:none;">
+                <div style="background:rgba(31,41,55,0.6); border:1px solid rgba(75,85,99,0.4); border-radius:1rem; padding:1.25rem; transition:all 0.2s; cursor:pointer;"
+                     onmouseover="this.style.borderColor='#6366f1'; this.style.transform='translateY(-2px)';"
+                     onmouseout="this.style.borderColor='rgba(75,85,99,0.4)'; this.style.transform='none';">
+                    <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.5rem;">
+                        <span style="font-size:11px; font-weight:700; padding:3px 8px; border-radius:6px; background:rgba(99,102,241,0.15); color:#818cf8;">
+                            {{ rm.get_category_display }}
+                        </span>
+                        <span style="font-size:11px; color:#6b7280;">{{ rm.node_count }} topics</span>
+                    </div>
+                    <h3 style="font-weight:700; color:white; margin:0 0 0.25rem 0; font-size:1.05rem;">{{ rm.title }}</h3>
+                    <p style="font-size:13px; color:#9ca3af; margin:0 0 0.5rem 0;">{{ rm.description|truncatechars:100 }}</p>
+                    <div style="font-size:12px; color:#6b7280;">by {{ rm.created_by.get_full_name|default:rm.created_by.username }}</div>
+                </div>
+            </a>
+            {% empty %}
+            <p style="color:#6b7280; grid-column:1/-1; text-align:center; padding:2rem;">No roadmaps yet. Be the first to create one!</p>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,116 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto">
+    <div class="mb-6">
+        <a href="{% url 'hackathon_list' %}" class="text-gray-400 hover:text-white text-sm flex items-center gap-1 mb-4">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+            Back to Hackathons
+        </a>
+    </div>
+
+    <!-- Header -->
+    <div class="glass-card rounded-2xl overflow-hidden mb-8 relative">
+        <div class="absolute inset-0 bg-gradient-to-r from-blue-900/40 to-purple-900/40 pointer-events-none"></div>
+        <div class="p-8 relative z-10">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+                <div>
+                    <h1 class="text-4xl font-bold text-white mb-2">{{ hackathon.title }}</h1>
+                    <div class="flex items-center gap-4 text-gray-300 text-sm">
+                        <span class="flex items-center gap-1">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                            {{ hackathon.start_date|date:"M d" }} - {{ hackathon.end_date|date:"M d, Y" }}
+                        </span>
+                        <span>•</span>
+                        <span class="capitalize">{{ hackathon.difficulty }}</span>
+                    </div>
+                </div>
+                {% if not user_team %}
+                    <a href="{% url 'create_team' hackathon_pk=hackathon.pk %}" class="px-6 py-3 rounded-xl bg-white text-indigo-900 font-bold hover:bg-gray-100 transition-colors shadow-lg">
+                        Create a Team
+                    </a>
+                {% else %}
+                     <a href="{% url 'team_detail' pk=user_team.pk %}" class="px-6 py-3 rounded-xl bg-indigo-600 text-white font-bold hover:bg-indigo-700 transition-colors shadow-lg">
+                        View My Team
+                    </a>
+                {% endif %}
+            </div>
+            <p class="text-gray-300 leading-relaxed max-w-3xl">{{ hackathon.description }}</p>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <!-- Teams List -->
+        <div class="md:col-span-2">
+            <h2 class="text-2xl font-bold text-white mb-6">Participating Teams</h2>
+            <div class="space-y-4">
+                {% for team in teams %}
+                    <div class="glass-card p-6 rounded-xl flex items-center justify-between group hover:bg-white/5 transition-colors">
+                        <div>
+                            <h3 class="font-bold text-white text-lg group-hover:text-indigo-400 transition-colors">
+                                <a href="{% url 'team_detail' pk=team.pk %}">{{ team.name }}</a>
+                            </h3>
+                            <p class="text-sm text-gray-400 mt-1">{{ team.members.count }}/{{ hackathon.max_team_size }} Members</p>
+                            <p class="text-xs text-indigo-400 mt-1">Leader: {{ team.leader.get_full_name|default:team.leader.username }}</p>
+                            <div class="flex -space-x-2 mt-3">
+                                {% for member in team.members.all|slice:":3" %}
+                                    <div class="w-8 h-8 rounded-full bg-gray-700 border-2 border-gray-800 overflow-hidden" title="{{ member.user.username }}">
+                                        {% if member.user.avatar %}
+                                            <img src="{{ member.user.avatar.url }}" class="w-full h-full object-cover">
+                                        {% else %}
+                                            <div class="w-full h-full flex items-center justify-center text-xs font-bold text-gray-400">{{ member.user.username|slice:":1"|upper }}</div>
+                                        {% endif %}
+                                    </div>
+                                {% endfor %}
+                                {% if team.members.count > 3 %}
+                                    <div class="w-8 h-8 rounded-full bg-gray-700 border-2 border-gray-800 flex items-center justify-center text-xs text-gray-400 font-bold">
+                                        +{{ team.members.count|add:"-3" }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        {% if user_team and user_team == team %}
+                             <span class="px-4 py-2 rounded-lg bg-indigo-500/20 text-indigo-300 text-sm font-bold border border-indigo-500/30">Your Team</span>
+                        {% elif not user_team and team.members.count < hackathon.max_team_size %}
+                            <form action="{% url 'join_team' pk=team.pk %}" method="post">
+                                {% csrf_token %}
+                                <button type="submit" class="px-4 py-2 rounded-lg border border-indigo-500 text-indigo-400 hover:bg-indigo-500 hover:text-white transition-colors text-sm font-bold">Join Request</button>
+                            </form>
+                        {% elif team.members.count >= hackathon.max_team_size %}
+                             <span class="px-4 py-2 rounded-lg bg-gray-700 text-gray-500 text-sm font-bold cursor-not-allowed">Full</span>
+                        {% endif %}
+                    </div>
+                {% empty %}
+                    <p class="text-gray-500 text-center py-12">No teams created yet. Be the first!</p>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="space-y-6">
+            <div class="glass-card p-6 rounded-xl">
+                <h3 class="font-bold text-white mb-4">Your Status</h3>
+                {% if user_team %}
+                    <div class="flex items-center gap-3 text-green-400 mb-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        <span class="font-bold">Registered</span>
+                    </div>
+                    <p class="text-sm text-gray-400">You are part of <a href="{% url 'team_detail' pk=user_team.pk %}" class="text-indigo-400 hover:underline">{{ user_team.name }}</a>.</p>
+                {% else %}
+                     <div class="flex items-center gap-3 text-gray-400 mb-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                        <span class="font-bold">Not Registered</span>
+                    </div>
+                    <p class="text-sm text-gray-400">Join a team or create one to participate.</p>
+                {% endif %}
+            </div>
+
+            <div class="glass-card p-6 rounded-xl">
+                <h3 class="font-bold text-white mb-4">Waitlist / Looking for Team</h3>
+                <p class="text-sm text-gray-500 mb-4">Feature coming soon.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

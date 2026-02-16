@@ -1,0 +1,114 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <div class="mb-6">
+        <a href="{% url 'question_list' %}" class="text-gray-400 hover:text-white text-sm flex items-center gap-1 mb-4">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+            Back to Discussions
+        </a>
+    </div>
+
+    <!-- Question -->
+    <div class="glass-card rounded-2xl p-8 mb-8">
+        <div class="flex gap-6">
+            <div class="flex flex-col items-center gap-2">
+                <span class="font-bold text-xl text-white">{{ question.answer_count }}</span>
+                <span class="text-xs text-gray-500">answers</span>
+            </div>
+            <div class="flex-grow">
+                <h1 class="text-3xl font-bold text-white mb-4">{{ question.title }}</h1>
+                <div class="prose prose-invert max-w-none text-gray-300 mb-6">
+                    {{ question.body|linebreaks }}
+                </div>
+                
+                <div class="flex flex-wrap gap-2 mb-6">
+                    {% for tag in question.tags_list %}
+                        <span class="px-2 py-1 rounded bg-indigo-500/10 text-indigo-300 border border-indigo-500/20 text-xs">#{{ tag }}</span>
+                    {% endfor %}
+                </div>
+
+                <div class="flex items-center justify-end text-sm text-gray-500 border-t border-gray-700 pt-4">
+                    <div class="flex items-center gap-2">
+                        <span>Asked {{ question.created_at|date:"M d, Y" }} by</span>
+                        <div class="flex items-center gap-2 px-2 py-1 rounded bg-gray-800">
+                             <div class="w-5 h-5 rounded-full bg-gray-600 overflow-hidden">
+                                {% if question.user.avatar %}
+                                    <img src="{{ question.user.avatar.url }}" class="w-full h-full object-cover">
+                                {% else %}
+                                    <div class="w-full h-full flex items-center justify-center font-bold text-xs text-white">{{ question.user.username|slice:":1"|upper }}</div>
+                                {% endif %}
+                            </div>
+                            <span class="text-indigo-400 font-medium">{{ question.user.username }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Answers -->
+    <h2 class="text-xl font-bold text-white mb-6">{{ answers.count }} Answers</h2>
+    <div class="space-y-6 mb-8">
+        {% for answer in answers %}
+            <div class="glass-card p-8 rounded-2xl {% if answer.is_accepted %}border-2 border-green-500/50 bg-green-900/10{% endif %}">
+                <div class="flex gap-6">
+                     <div class="flex flex-col items-center gap-2">
+                        <form action="{% url 'upvote_answer' pk=answer.pk %}" method="post">
+                            {% csrf_token %}
+                            <button type="submit" class="text-gray-500 hover:text-indigo-400 transition-colors">
+                                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path></svg>
+                            </button>
+                        </form>
+                        <span class="font-bold text-xl text-white">{{ answer.votes.count }}</span>
+                        {% if answer.is_accepted %}
+                             <span class="text-green-400 pt-2" title="Best Answer">
+                                <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg>
+                             </span>
+                        {% endif %}
+                    </div>
+                    <div class="flex-grow">
+                        <div class="prose prose-invert max-w-none text-gray-300 mb-6">
+                            {{ answer.body|linebreaks }}
+                        </div>
+                         <div class="flex items-center justify-end text-sm text-gray-500 border-t border-gray-700/50 pt-4">
+                            <div class="flex items-center gap-2">
+                                <span>Answered {{ answer.created_at|timesince }} ago by</span>
+                                <span class="text-indigo-400 font-medium">{{ answer.user.username }}</span>
+                            </div>
+                        </div>
+
+                         {% if user == question.user and not question.is_solved %}
+                            <div class="mt-4 flex justify-end">
+                                <form action="{% url 'mark_best_answer' pk=question.pk answer_pk=answer.pk %}" method="post">
+                                    {% csrf_token %}
+                                    <button type="submit" class="text-sm font-medium text-green-400 hover:text-green-300 flex items-center gap-1">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                        Mark as Best Answer
+                                    </button>
+                                </form>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+    <!-- Post Answer -->
+    {% if user.is_authenticated %}
+        <div class="glass-card p-8 rounded-2xl">
+            <h3 class="font-bold text-white mb-4">Your Answer</h3>
+            <form method="post" action="{% url 'post_answer' pk=question.pk %}">
+                {% csrf_token %}
+                <div class="mb-4">
+                    <textarea name="body" rows="6" required class="w-full bg-gray-800 border-gray-700 rounded-lg text-white p-4 focus:ring-indigo-500" placeholder="Write a helpful answer..."></textarea>
+                </div>
+                <button type="submit" class="px-6 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold transition-colors shadow-lg shadow-indigo-500/20">
+                    Post Answer
+                </button>
+            </form>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

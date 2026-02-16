@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <h1 class="text-3xl font-bold text-white mb-8">My Connections</h1>
+
+    <!-- Tabs -->
+    <div x-data="{ tab: 'received' }" class="space-y-6">
+        <div class="flex border-b border-gray-800">
+            <button @click="tab = 'received'" :class="{'text-white border-indigo-500': tab === 'received', 'text-gray-500 border-transparent hover:text-gray-300': tab !== 'received'}" class="px-6 py-3 font-medium border-b-2 transition-colors">
+                Received Requests <span class="ml-2 bg-gray-800 text-gray-300 px-2 py-0.5 rounded-full text-xs">{{ received.count }}</span>
+            </button>
+            <button @click="tab = 'sent'" :class="{'text-white border-indigo-500': tab === 'sent', 'text-gray-500 border-transparent hover:text-gray-300': tab !== 'sent'}" class="px-6 py-3 font-medium border-b-2 transition-colors">
+                Sent Requests <span class="ml-2 bg-gray-800 text-gray-300 px-2 py-0.5 rounded-full text-xs">{{ sent.count }}</span>
+            </button>
+        </div>
+
+        <!-- Received -->
+        <div x-show="tab === 'received'" class="space-y-4">
+            {% for req in received %}
+                <div class="glass-card p-6 rounded-xl flex items-center justify-between gap-4">
+                    <div class="flex items-center gap-4">
+                         <div class="w-12 h-12 rounded-full bg-gray-700 overflow-hidden">
+                            {% if req.from_user.avatar %}
+                                <img src="{{ req.from_user.avatar.url }}" class="w-full h-full object-cover">
+                            {% else %}
+                                <div class="w-full h-full flex items-center justify-center text-sm font-bold">{{ req.from_user.username|slice:":1"|upper }}</div>
+                            {% endif %}
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-white">{{ req.from_user.get_full_name }}</h3>
+                            <p class="text-sm text-gray-400">{{ req.message|truncatechars:60 }}</p>
+                        </div>
+                    </div>
+                    {% if req.status == 'pending' %}
+                        <div class="flex gap-2">
+                            <a href="{% url 'handle_connection' pk=req.pk action='accept' %}" class="px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium">Accept</a>
+                            <a href="{% url 'handle_connection' pk=req.pk action='reject' %}" class="px-4 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 text-gray-300 text-sm font-medium">Decline</a>
+                        </div>
+                    {% else %}
+                        <div class="flex items-center gap-3">
+                            <span class="px-3 py-1 rounded-full text-xs font-bold {% if req.status == 'accepted' %}bg-green-500/20 text-green-400{% else %}bg-red-500/20 text-red-400{% endif %}">{{ req.status|title }}</span>
+                            {% if req.status == 'accepted' %}
+                                <a href="{% url 'start_chat' user_id=req.from_user.id %}" class="px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium">Message</a>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                </div>
+            {% empty %}
+                <p class="text-gray-500 text-center py-8">No received requests.</p>
+            {% endfor %}
+        </div>
+
+        <!-- Sent -->
+        <div x-show="tab === 'sent'" class="space-y-4" style="display: none;">
+            {% for req in sent %}
+                <div class="glass-card p-6 rounded-xl flex items-center justify-between gap-4">
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-full bg-gray-700 overflow-hidden">
+                            {% if req.to_user.avatar %}
+                                <img src="{{ req.to_user.avatar.url }}" class="w-full h-full object-cover">
+                            {% else %}
+                                <div class="w-full h-full flex items-center justify-center text-sm font-bold">{{ req.to_user.username|slice:":1"|upper }}</div>
+                            {% endif %}
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-white">{{ req.to_user.get_full_name }}</h3>
+                            <p class="text-sm text-gray-500">Sent on {{ req.created_at|date:"M d, Y" }}</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <span class="px-3 py-1 rounded-full text-xs font-bold {% if req.status == 'accepted' %}bg-green-500/20 text-green-400{% elif req.status == 'pending' %}bg-yellow-500/20 text-yellow-400{% else %}bg-red-500/20 text-red-400{% endif %}">{{ req.status|title }}</span>
+                        {% if req.status == 'accepted' %}
+                            <a href="{% url 'start_chat' user_id=req.to_user.id %}" class="px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium">Message</a>
+                        {% endif %}
+                    </div>
+                </div>
+            {% empty %}
+                <p class="text-gray-500 text-center py-8">No sent requests.</p>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

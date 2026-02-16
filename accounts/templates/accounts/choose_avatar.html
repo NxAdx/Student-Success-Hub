@@ -1,0 +1,110 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div style="display:flex; align-items:center; justify-content:center; min-height:70vh; padding:2rem 1rem;">
+    <div style="width:100%; max-width:520px; background:rgba(31,41,55,0.8); backdrop-filter:blur(20px); border:1px solid rgba(75,85,99,0.4); border-radius:1.5rem; padding:1.75rem; box-shadow:0 25px 50px rgba(0,0,0,0.4);"
+         x-data="avatarPicker()">
+
+        <!-- Header -->
+        <div style="display:flex; align-items:center; gap:0.75rem; margin-bottom:1.5rem;">
+            <a href="{% url 'edit_profile' %}" style="color:#9ca3af; text-decoration:none; display:flex;">
+                <svg style="width:18px;height:18px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"></path></svg>
+            </a>
+            <h1 style="font-size:1.2rem; font-weight:800; color:white; margin:0; letter-spacing:-0.01em;">Select Avatar</h1>
+        </div>
+
+        <!-- Layout: Preview Left + Grid Right -->
+        <div style="display:flex; gap:1.25rem; align-items:flex-start;">
+
+            <!-- Large Preview Circle - fixed size -->
+            <div style="flex-shrink:0; width:150px;">
+                <div style="width:150px; height:150px; border-radius:50%; overflow:hidden; background:#7c3aed33; border:3px solid #7c3aed; display:flex; align-items:center; justify-content:center;">
+                    <img :src="previewUrl"
+                         style="width:140px; height:140px; border-radius:50%; object-fit:cover;"
+                         id="preview-img">
+                </div>
+            </div>
+
+            <!-- Right Side: Grid - fixed width -->
+            <div style="flex:1; min-width:0; overflow:hidden;">
+                <!-- Style pills -->
+                <div style="display:flex; flex-wrap:wrap; gap:3px; margin-bottom:0.6rem;">
+                    <template x-for="s in styles" :key="s.id">
+                        <button @click="activeStyle = s.id"
+                                :style="activeStyle === s.id
+                                    ? 'background:#4f46e5; color:white; box-shadow:0 2px 8px rgba(79,70,229,0.3);'
+                                    : 'background:transparent; color:#9ca3af;'"
+                                style="padding:2px 7px; border-radius:9999px; font-size:10px; font-weight:600; border:none; cursor:pointer; transition:all 0.15s; white-space:nowrap;"
+                                x-text="s.label">
+                        </button>
+                    </template>
+                </div>
+
+                <!-- 4-column Avatar Grid - fixed cell sizes -->
+                <div style="display:grid; grid-template-columns:repeat(4, 52px); gap:8px; justify-content:start;">
+                    <template x-for="(seed, i) in seeds" :key="seed">
+                        <button @click="selectAvatar(seed)"
+                                style="border:none; background:none; cursor:pointer; padding:0; outline:none; width:52px; height:52px;">
+                            <div style="width:52px; height:52px; border-radius:50%; overflow:hidden; transition:border-color 0.15s, box-shadow 0.15s;"
+                                 :style="'background:' + colors[i % colors.length] + '; border:2.5px solid ' + (selectedSeed === seed ? '#818cf8' : 'transparent') + '; box-shadow:' + (selectedSeed === seed ? '0 0 0 3px rgba(129,140,248,0.25)' : 'none') + ';'">
+                                <img :src="'https://api.dicebear.com/9.x/' + activeStyle + '/svg?seed=' + seed"
+                                     style="width:52px; height:52px; display:block;" loading="lazy" :alt="seed">
+                            </div>
+                        </button>
+                    </template>
+                </div>
+            </div>
+        </div>
+
+        <!-- Select Button - bottom left, styled like reference -->
+        <div style="margin-top:1.5rem;">
+            <form method="post" action="{% url 'save_avatar' %}" style="margin:0;">
+                {% csrf_token %}
+                <input type="hidden" name="avatar_url" :value="saveUrl">
+                <button type="submit" :disabled="!selectedSeed"
+                        :style="selectedSeed
+                            ? 'background:#4f46e5; color:white; cursor:pointer; box-shadow:0 4px 15px rgba(79,70,229,0.35);'
+                            : 'background:#4f46e5; color:rgba(255,255,255,0.4); cursor:not-allowed; opacity:0.45;'"
+                        style="padding:10px 32px; border-radius:9999px; font-size:14px; font-weight:700; border:none; transition:all 0.2s;">
+                    Select
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+function avatarPicker() {
+    const currentAvatar = '{% if user.avatar %}{{ user.avatar.url }}{% endif %}';
+    return {
+        activeStyle: 'adventurer',
+        selectedSeed: '',
+        seeds: [
+            'Aneka', 'Felix', 'Jade', 'Leo',
+            'Maria', 'Oliver', 'Sofia', 'Zoe',
+            'Luna', 'Kai', 'Nova', 'Rio',
+        ],
+        styles: [
+            { id: 'adventurer', label: '⚔️ Adventure' },
+            { id: 'notionists', label: '🎨 Notion' },
+            { id: 'fun-emoji', label: '😄 Emoji' },
+            { id: 'lorelei', label: '🌸 Lorelei' },
+            { id: 'bottts', label: '🤖 Bots' },
+        ],
+        colors: [
+            '#6d28d9', '#db2777', '#0891b2', '#1e293b',
+            '#7c3aed', '#d97706', '#059669', '#e11d48',
+            '#ca8a04', '#be185d', '#2563eb', '#7e22ce',
+        ],
+        get previewUrl() {
+            if (this.selectedSeed) return `https://api.dicebear.com/9.x/${this.activeStyle}/svg?seed=${this.selectedSeed}`;
+            return currentAvatar || 'https://api.dicebear.com/9.x/adventurer/svg?seed=default';
+        },
+        get saveUrl() {
+            return this.selectedSeed ? `https://api.dicebear.com/9.x/${this.activeStyle}/png?seed=${this.selectedSeed}&size=128` : '';
+        },
+        selectAvatar(seed) { this.selectedSeed = seed; }
+    };
+}
+</script>
+{% endblock %}

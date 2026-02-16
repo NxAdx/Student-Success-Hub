@@ -1,0 +1,212 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto h-[calc(100vh-8rem)] flex flex-col">
+    <!-- Header -->
+    <div class="flex items-center justify-between mb-4" x-data="{ dropdownOpen: false, membersOpen: false, editOpen: false }">
+        <div class="flex items-center gap-3">
+            <a href="{% url 'chat_list' %}" class="md:hidden text-gray-400 hover:text-white flex items-center gap-1">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+            </a>
+             <div class="w-10 h-10 rounded-full bg-gray-700 overflow-hidden relative flex items-center justify-center">
+                {% if room.room_type == 'direct' %}
+                    {% if other_user.avatar %}
+                        <img src="{{ other_user.avatar.url }}" class="w-full h-full object-cover">
+                    {% else %}
+                        <span class="font-bold text-white">{{ other_user.username|slice:":1"|upper }}</span>
+                    {% endif %}
+                {% elif room.room_type == 'support' %}
+                    <svg class="w-5 h-5 text-pink-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>
+                {% else %}
+                    <span class="font-bold text-white text-lg">#</span>
+                {% endif %}
+            </div>
+            <div>
+                <h1 class="text-lg font-bold text-white">
+                    {% if room.room_type == 'direct' %}
+                        {{ other_user.get_full_name|default:other_user.username }}
+                    {% else %}
+                        {{ room.name }}
+                    {% endif %}
+                </h1>
+                <p class="text-xs text-gray-400 flex items-center gap-1">
+                    {% if room.room_type == 'direct' %}
+                         <span class="w-2 h-2 bg-green-500 rounded-full"></span> Online
+                    {% elif room.room_type == 'support' %}
+                        <span class="px-1.5 py-0.5 rounded bg-pink-600/30 text-pink-400 text-[10px] font-bold">ANONYMOUS</span>
+                        <span class="ml-1">{{ room.participants.count }} members</span>
+                    {% else %}
+                        {{ room.participants.count }} members
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+
+        <div class="relative">
+             <button @click="dropdownOpen = !dropdownOpen" class="text-gray-400 hover:text-white p-2 rounded-lg hover:bg-gray-800 transition-colors">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"></path></svg>
+            </button>
+            
+            <!-- Dropdown -->
+            <div x-show="dropdownOpen" @click.outside="dropdownOpen = false" x-transition class="absolute right-0 mt-2 w-48 bg-gray-800 rounded-xl shadow-xl border border-gray-700 z-50 overflow-hidden">
+                {% if not room.is_anonymous %}
+                <button @click="membersOpen = true; dropdownOpen = false" class="block w-full text-left px-4 py-3 text-sm text-gray-300 hover:bg-gray-700 hover:text-white transition-colors">
+                    View Members
+                </button>
+                {% endif %}
+                {% if room.room_type in 'group,support' %}
+                    <button @click="editOpen = true; dropdownOpen = false" class="block w-full text-left px-4 py-3 text-sm text-gray-300 hover:bg-gray-700 hover:text-white transition-colors border-t border-gray-700">
+                        Edit Group Info
+                    </button>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Members Modal -->
+        <div x-show="membersOpen" class="fixed inset-0 z-50 flex items-center justify-center px-4" style="display: none;">
+            <div class="absolute inset-0 bg-black/80 backdrop-blur-sm" @click="membersOpen = false"></div>
+            <div class="bg-gray-900 rounded-2xl w-full max-w-md p-6 relative z-10 border border-gray-800 shadow-2xl">
+                <h3 class="text-xl font-bold text-white mb-4">Members</h3>
+                <div class="space-y-3 max-h-96 overflow-y-auto pr-2">
+                    {% for member in room.participants.all %}
+                        <div class="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-800">
+                             <div class="w-8 h-8 rounded-full bg-gray-700 overflow-hidden flex items-center justify-center">
+                                {% if member.avatar %}
+                                    <img src="{{ member.avatar.url }}" class="w-full h-full object-cover">
+                                {% else %}
+                                    <span class="text-xs font-bold text-white">{{ member.username|slice:":1"|upper }}</span>
+                                {% endif %}
+                            </div>
+                            <span class="text-gray-300">
+                                {{ member.get_full_name|default:member.username }}
+                                {% if member.role in 'teacher,professional' %}
+                                    <span class="ml-2 px-2 py-0.5 rounded bg-indigo-500 text-white text-[10px] uppercase font-bold tracking-wide">Counselor</span>
+                                {% endif %}
+                            </span>
+                        </div>
+                    {% endfor %}
+                </div>
+                <button @click="membersOpen = false" class="mt-6 w-full py-2 rounded-lg bg-gray-800 text-gray-300 hover:bg-gray-700 transition-colors">Close</button>
+            </div>
+        </div>
+
+        <!-- Edit Modal -->
+        {% if room.room_type == 'group' %}
+            <div x-show="editOpen" class="fixed inset-0 z-50 flex items-center justify-center px-4" style="display: none;">
+                <div class="absolute inset-0 bg-black/80 backdrop-blur-sm" @click="editOpen = false"></div>
+                <div class="bg-gray-900 rounded-2xl w-full max-w-md p-6 relative z-10 border border-gray-800 shadow-2xl">
+                    <h3 class="text-xl font-bold text-white mb-4">Edit Group Info</h3>
+                    <form action="{% url 'edit_room' pk=room.pk %}" method="post">
+                        {% csrf_token %}
+                        <div class="mb-4">
+                            <label class="block text-sm text-gray-400 mb-2">Group Name</label>
+                            <input type="text" name="name" value="{{ room.name }}" class="w-full bg-gray-800 border-gray-700 rounded-lg text-white px-4 py-2 focus:ring-indigo-500">
+                        </div>
+                        <div class="flex gap-3">
+                            <button type="button" @click="editOpen = false" class="flex-1 py-2 rounded-lg bg-gray-800 text-gray-300 hover:bg-gray-700 transition-colors">Cancel</button>
+                            <button type="submit" class="flex-1 py-2 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition-colors">Save</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Chat Area -->
+    <div class="flex-grow bg-gray-800/50 backdrop-blur-xl border border-gray-700/50 rounded-2xl overflow-hidden flex flex-col">
+        <!-- Messages -->
+        <div class="flex-grow p-6 overflow-y-auto space-y-4" id="messages-container">
+            <!-- Messages fetched via AJAX will be inserted here -->
+            <p class="text-center text-gray-500 text-sm py-4">Loading messages...</p>
+        </div>
+
+        <!-- Input -->
+        <div class="p-4 bg-gray-800 border-t border-gray-700">
+            <form id="chat-form" class="flex gap-4">
+                {% csrf_token %}
+                <div class="flex-grow relative">
+                    <input type="text" id="message-input" required placeholder="Type a message..." class="w-full bg-gray-900 border-gray-600 rounded-xl text-white px-4 py-3 focus:ring-indigo-500 focus:border-indigo-500 pr-12">
+                     <button type="button" class="absolute right-3 top-3 text-gray-500 hover:text-white">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    </button>
+                </div>
+                <button type="submit" class="p-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white transition-colors shadow-lg">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    const roomId = "{{ room.id }}";
+    const currentUserId = "{{ request.user.id }}";
+    const messagesContainer = document.getElementById('messages-container');
+    const chatForm = document.getElementById('chat-form');
+    const messageInput = document.getElementById('message-input');
+    let lastMessageId = 0;
+
+    function scrollToBottom() {
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+
+    function fetchMessages() {
+        fetch(`/chat/room/${roomId}/fetch/`)
+            .then(response => response.json())
+            .then(data => {
+                // Clear loading text on first load
+                if (lastMessageId === 0) messagesContainer.innerHTML = '';
+                
+                let newMessages = false;
+                data.messages.forEach(msg => {
+                    if (msg.id > lastMessageId) {
+                         const isMe = msg.sender_id == currentUserId;
+                         const msgDiv = document.createElement('div');
+                         msgDiv.className = `flex flex-col ${isMe ? 'items-end' : 'items-start'}`;
+                         
+                         let senderHtml = '';
+                         if (!isMe) {
+                             senderHtml = `<p class="text-xs text-gray-400 mb-1 ml-1 font-bold">${msg.sender}</p>`;
+                         }
+
+                         msgDiv.innerHTML = `
+                            ${senderHtml}
+                            <div class="max-w-[70%] rounded-2xl px-4 py-2 ${isMe ? 'bg-indigo-600 text-white rounded-tr-none' : 'bg-gray-700 text-gray-200 rounded-tl-none'} shadow-sm">
+                                <p class="text-sm leading-relaxed">${msg.content}</p>
+                            </div>
+                            <span class="text-[10px] text-gray-500 mt-1 px-1">${msg.created_at}</span>
+                         `;
+                         messagesContainer.appendChild(msgDiv);
+                         lastMessageId = msg.id;
+                         newMessages = true;
+                    }
+                });
+                if (newMessages) scrollToBottom();
+            });
+    }
+
+    chatForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const content = messageInput.value.trim();
+        if (!content) return;
+
+        // Optimistic UI update could go here
+
+        fetch(`/chat/room/${roomId}/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: `content=${encodeURIComponent(content)}`
+        }).then(() => {
+            messageInput.value = '';
+            fetchMessages(); // Refresh immediately
+        });
+    });
+
+    // Initial load and polling
+    fetchMessages();
+    setInterval(fetchMessages, 3000); // Poll every 3 seconds
+</script>
+{% endblock %}

@@ -1,0 +1,19 @@
+# Django
+db.sqlite3
+*.log
+local_settings.py
+__pycache__/
+*.py[cod]
+
+# Environment
+.env
+venv/
+env/
+
+# Static
+staticfiles/
+/media/
+
+# Node
+node_modules/
+npm-debug.log

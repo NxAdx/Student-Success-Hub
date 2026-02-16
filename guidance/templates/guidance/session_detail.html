@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto">
+    <div class="mb-6">
+        <a href="{% url 'session_list' %}" class="text-gray-400 hover:text-white text-sm flex items-center gap-1 mb-4">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+            Back to Sessions
+        </a>
+    </div>
+
+    <div class="glass-card rounded-2xl overflow-hidden mb-8">
+        <div class="bg-gradient-to-r from-indigo-900/50 to-purple-900/50 p-8">
+            <div class="flex items-center gap-4 mb-4">
+                <span class="px-3 py-1 rounded-full bg-indigo-500 text-white text-xs font-bold uppercase tracking-wider">{{ session.session_type }}</span>
+                {% if session.is_available %}
+                    <span class="px-3 py-1 rounded-full bg-green-500/20 text-green-400 border border-green-500/30 text-xs font-bold uppercase tracking-wider">Open for Booking</span>
+                {% else %}
+                    <span class="px-3 py-1 rounded-full bg-red-500/20 text-red-400 border border-red-500/30 text-xs font-bold uppercase tracking-wider">Fully Booked</span>
+                {% endif %}
+            </div>
+            <h1 class="text-3xl font-bold text-white mb-4">{{ session.title }}</h1>
+            <div class="flex items-center gap-6 text-gray-300 text-sm">
+                <div class="flex items-center gap-2">
+                    <svg class="w-5 h-5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                    <span>{{ session.scheduled_at|date:"l, F d, Y" }}</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <svg class="w-5 h-5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    <span>{{ session.scheduled_at|time:"h:i A" }} ({{ session.duration }} mins)</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="p-8">
+            <div class="flex items-start gap-6 mb-8">
+                <div class="flex-shrink-0 text-center">
+                    <div class="w-16 h-16 rounded-full bg-gray-700 overflow-hidden mb-2 mx-auto">
+                        {% if session.mentor.avatar %}
+                            <img src="{{ session.mentor.avatar.url }}" class="w-full h-full object-cover">
+                        {% else %}
+                            <div class="w-full h-full flex items-center justify-center font-bold text-xl">{{ session.mentor.username|slice:":1"|upper }}</div>
+                        {% endif %}
+                    </div>
+                    <p class="text-sm font-bold text-white">{{ session.mentor.get_full_name }}</p>
+                    <p class="text-xs text-gray-500">{{ session.mentor.role|title }}</p>
+                </div>
+                <div class="flex-grow">
+                    <h3 class="font-bold text-white mb-2">About this Session</h3>
+                    <p class="text-gray-400 leading-relaxed">{{ session.description|linebreaks }}</p>
+                    
+                    {% if session.meeting_link and is_booked %}
+                        <div class="mt-6 p-4 rounded-lg bg-green-900/20 border border-green-500/20">
+                            <h4 class="font-bold text-green-400 mb-1">Meeting Link</h4>
+                            <a href="{{ session.meeting_link }}" target="_blank" class="text-green-300 hover:text-green-200 underline break-all">{{ session.meeting_link }}</a>
+                            <p class="text-xs text-green-500/70 mt-2">Join at the scheduled time.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="border-t border-gray-700 pt-6 flex justify-end">
+                {% if user == session.mentor %}
+                    <a href="#" class="px-6 py-3 rounded-xl bg-gray-700 hover:bg-gray-600 text-white font-bold transition-colors">Edit Session</a>
+                {% else %}
+                    {% if is_booked %}
+                        <button disabled class="px-6 py-3 rounded-xl bg-green-600/50 text-white font-bold cursor-default flex items-center gap-2">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                            Booked
+                        </button>
+                    {% elif session.is_available %}
+                        <a href="{% url 'book_session' pk=session.pk %}" class="px-6 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold transition-colors shadow-lg shadow-indigo-500/30">
+                            Book Session ({{ session.available_slots }} spots left)
+                        </a>
+                    {% else %}
+                        <button disabled class="px-6 py-3 rounded-xl bg-gray-700 text-gray-400 font-bold cursor-not-allowed">
+                            Session Full
+                        </button>
+                    {% endif %}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

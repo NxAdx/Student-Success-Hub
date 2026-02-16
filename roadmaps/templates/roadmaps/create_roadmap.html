@@ -1,0 +1,191 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto space-y-6">
+    <!-- Header -->
+    <div>
+        <a href="{% url 'roadmaps:roadmap_list' %}" style="color:#818cf8; text-decoration:none; font-size:13px; font-weight:600; display:inline-flex; align-items:center; gap:4px; margin-bottom:0.5rem;">
+            <svg style="width:14px;height:14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+            Back
+        </a>
+        <h1 style="font-size:1.5rem; font-weight:800; color:white; margin:0;">
+            {% if editing %}✏️ Edit Roadmap{% else %}🗺️ Create Roadmap{% endif %}
+        </h1>
+    </div>
+
+    <form method="post" id="roadmap-form" style="background:rgba(31,41,55,0.6); border:1px solid rgba(75,85,99,0.4); border-radius:1rem; padding:1.5rem;">
+        {% csrf_token %}
+        <div style="display:flex; flex-direction:column; gap:1rem;">
+            <!-- Title -->
+            <div>
+                <label style="font-size:13px; font-weight:600; color:#d1d5db; display:block; margin-bottom:4px;">Title *</label>
+                <input type="text" name="title" required
+                       value="{% if roadmap %}{{ roadmap.title }}{% endif %}"
+                       style="width:100%; padding:10px 14px; border-radius:10px; border:1px solid rgba(75,85,99,0.5); background:rgba(17,24,39,0.6); color:white; font-size:14px; outline:none;"
+                       placeholder="e.g. Frontend Developer Roadmap 2025">
+            </div>
+            <!-- Description -->
+            <div>
+                <label style="font-size:13px; font-weight:600; color:#d1d5db; display:block; margin-bottom:4px;">Description</label>
+                <textarea name="description" rows="3"
+                          style="width:100%; padding:10px 14px; border-radius:10px; border:1px solid rgba(75,85,99,0.5); background:rgba(17,24,39,0.6); color:white; font-size:14px; outline:none; resize:vertical;"
+                          placeholder="A brief overview of what this roadmap covers...">{% if roadmap %}{{ roadmap.description }}{% endif %}</textarea>
+            </div>
+            <!-- Category -->
+            <div>
+                <label style="font-size:13px; font-weight:600; color:#d1d5db; display:block; margin-bottom:4px;">Category</label>
+                <select name="category"
+                        style="width:100%; padding:10px 14px; border-radius:10px; border:1px solid rgba(75,85,99,0.5); background:rgba(17,24,39,0.6); color:white; font-size:14px;">
+                    {% for val, label in categories %}
+                    <option value="{{ val }}" {% if roadmap and roadmap.category == val %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+
+        <!-- Node Editor -->
+        <div style="margin-top:1.5rem; border-top:1px solid rgba(75,85,99,0.3); padding-top:1.5rem;">
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:1rem;">
+                <h2 style="font-size:1rem; font-weight:700; color:white; margin:0;">📌 Roadmap Nodes</h2>
+                <button type="button" id="add-node-btn"
+                        style="padding:6px 14px; border-radius:8px; background:#4f46e5; color:white; font-size:13px; font-weight:600; border:none; cursor:pointer;">
+                    + Add Node
+                </button>
+            </div>
+            <div id="nodes-container" style="display:flex; flex-direction:column; gap:0.75rem;"></div>
+        </div>
+
+        <input type="hidden" name="nodes_json" id="nodes-json-input">
+
+        <div style="margin-top:1.5rem; display:flex; gap:0.5rem;">
+            <button type="submit"
+                    style="padding:10px 24px; border-radius:10px; background:#4f46e5; color:white; font-weight:700; font-size:14px; border:none; cursor:pointer;">
+                {% if editing %}Resubmit for Review{% else %}Submit for Review{% endif %}
+            </button>
+            <a href="{% url 'roadmaps:roadmap_list' %}"
+               style="padding:10px 24px; border-radius:10px; background:rgba(55,65,81,0.5); color:#9ca3af; font-weight:600; font-size:14px; text-decoration:none;">
+                Cancel
+            </a>
+        </div>
+    </form>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    let nodes = [];
+    let nodeCounter = 0;
+
+    {% if existing_nodes_json %}
+    const existing = {{ existing_nodes_json|safe }};
+    existing.forEach(n => {
+        nodes.push({
+            temp_id: n.temp_id || String(nodeCounter++),
+            title: n.title,
+            description: n.description || '',
+            resources_text: n.resources_text || '',
+            parent_temp_id: n.parent_temp_id || '',
+            order: n.order || 0,
+        });
+    });
+    {% endif %}
+
+    function render() {
+        const container = document.getElementById('nodes-container');
+        if (nodes.length === 0) {
+            container.innerHTML = '<p style="color:#6b7280; text-align:center; padding:1rem;">No nodes yet. Click "Add Node" to get started.</p>';
+            return;
+        }
+        let html = '';
+        nodes.forEach((node, i) => {
+            node.order = i;
+            html += `
+            <div style="background:rgba(17,24,39,0.5); border:1px solid rgba(75,85,99,0.4); border-radius:10px; padding:1rem; position:relative;">
+                <div style="display:flex; gap:0.75rem; align-items:flex-start;">
+                    <span style="color:#6b7280; font-weight:700; font-size:14px; min-width:24px; padding-top:8px;">${i + 1}.</span>
+                    <div style="flex:1; display:flex; flex-direction:column; gap:0.5rem;">
+                        <input type="text" value="${escHtml(node.title)}" data-idx="${i}" data-field="title"
+                               style="width:100%; padding:8px 12px; border-radius:8px; border:1px solid rgba(75,85,99,0.4); background:rgba(31,41,55,0.6); color:white; font-size:13px; outline:none;"
+                               placeholder="Node title (e.g. Learn HTML)">
+                        <input type="text" value="${escHtml(node.description)}" data-idx="${i}" data-field="description"
+                               style="width:100%; padding:8px 12px; border-radius:8px; border:1px solid rgba(75,85,99,0.4); background:rgba(31,41,55,0.6); color:#d1d5db; font-size:12px; outline:none;"
+                               placeholder="Brief description (optional)">
+                        <input type="text" value="${escHtml(node.resources_text)}" data-idx="${i}" data-field="resources_text"
+                               style="width:100%; padding:8px 12px; border-radius:8px; border:1px solid rgba(75,85,99,0.4); background:rgba(31,41,55,0.6); color:#818cf8; font-size:12px; outline:none;"
+                               placeholder="Resources / links (optional)">
+                        <select data-idx="${i}" data-field="parent_temp_id"
+                                style="width:100%; padding:6px 10px; border-radius:8px; border:1px solid rgba(75,85,99,0.4); background:rgba(31,41,55,0.6); color:#d1d5db; font-size:12px;">
+                            <option value="">— No parent (root node) —</option>
+                            ${nodes.filter(n => n.temp_id !== node.temp_id).map(n => 
+                                `<option value="${n.temp_id}" ${node.parent_temp_id === n.temp_id ? 'selected' : ''}>${n.title || 'Untitled'}</option>`
+                            ).join('')}
+                        </select>
+                    </div>
+                    <div style="display:flex; flex-direction:column; gap:4px;">
+                        ${i > 0 ? `<button type="button" class="move-btn" data-idx="${i}" data-dir="up" style="width:28px;height:28px;border-radius:6px;border:none;background:rgba(55,65,81,0.5);color:#9ca3af;cursor:pointer;font-size:12px;">↑</button>` : ''}
+                        ${i < nodes.length - 1 ? `<button type="button" class="move-btn" data-idx="${i}" data-dir="down" style="width:28px;height:28px;border-radius:6px;border:none;background:rgba(55,65,81,0.5);color:#9ca3af;cursor:pointer;font-size:12px;">↓</button>` : ''}
+                        <button type="button" class="del-btn" data-idx="${i}" style="width:28px;height:28px;border-radius:6px;border:none;background:rgba(239,68,68,0.15);color:#f87171;cursor:pointer;font-size:12px;">✕</button>
+                    </div>
+                </div>
+            </div>`;
+        });
+        container.innerHTML = html;
+
+        // Bind inputs
+        container.querySelectorAll('input, select').forEach(el => {
+            el.addEventListener('change', function() {
+                const idx = parseInt(this.dataset.idx);
+                const field = this.dataset.field;
+                nodes[idx][field] = this.value;
+            });
+            if (el.tagName === 'INPUT') {
+                el.addEventListener('input', function() {
+                    const idx = parseInt(this.dataset.idx);
+                    const field = this.dataset.field;
+                    nodes[idx][field] = this.value;
+                });
+            }
+        });
+        // Move & delete
+        container.querySelectorAll('.move-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const idx = parseInt(this.dataset.idx);
+                const dir = this.dataset.dir;
+                const swapIdx = dir === 'up' ? idx - 1 : idx + 1;
+                [nodes[idx], nodes[swapIdx]] = [nodes[swapIdx], nodes[idx]];
+                render();
+            });
+        });
+        container.querySelectorAll('.del-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const idx = parseInt(this.dataset.idx);
+                const removedId = nodes[idx].temp_id;
+                nodes.splice(idx, 1);
+                // Clear parent refs to removed node
+                nodes.forEach(n => { if (n.parent_temp_id === removedId) n.parent_temp_id = ''; });
+                render();
+            });
+        });
+    }
+
+    function escHtml(s) { return (s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;'); }
+
+    document.getElementById('add-node-btn').addEventListener('click', function() {
+        nodes.push({
+            temp_id: 'new_' + (nodeCounter++),
+            title: '',
+            description: '',
+            resources_text: '',
+            parent_temp_id: '',
+            order: nodes.length,
+        });
+        render();
+    });
+
+    document.getElementById('roadmap-form').addEventListener('submit', function() {
+        document.getElementById('nodes-json-input').value = JSON.stringify(nodes);
+    });
+
+    render();
+});
+</script>
+{% endblock %}

@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="max-w-md mx-auto">
+    <div class="glass-card p-8 rounded-2xl">
+        <h1 class="text-2xl font-bold text-white mb-6">Create Team</h1>
+        <p class="text-gray-400 mb-6 text-sm">For {{ hackathon.title }}</p>
+
+        <form method="post" class="space-y-6">
+            {% csrf_token %}
+            <div>
+                <label class="block text-sm text-gray-400 mb-2">Team Name</label>
+                <input type="text" name="name" required class="w-full bg-gray-800 border-gray-700 rounded-lg text-white p-3 focus:ring-indigo-500" placeholder="e.g., Code Wizards">
+            </div>
+
+            <div>
+                <label class="block text-sm text-gray-400 mb-2">Description / Skills Needed</label>
+                <textarea name="description" rows="4" class="w-full bg-gray-800 border-gray-700 rounded-lg text-white p-3 focus:ring-indigo-500" placeholder="Describe your project idea or what skills you are looking for..."></textarea>
+            </div>
+
+            <button type="submit" class="w-full py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold transition-colors shadow-lg shadow-indigo-500/20">
+                Create Team
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}

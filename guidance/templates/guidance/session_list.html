@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="mb-8 flex justify-between items-center">
+    <div>
+        <h1 class="text-3xl font-bold text-white mb-2">Mentorship Sessions</h1>
+        <p class="text-gray-400">Book guidance sessions with alumni and experts.</p>
+    </div>
+    {% if user.role == 'alumni' or user.role == 'teacher' or user.role == 'professional' %}
+        <a href="{% url 'create_session' %}" class="px-6 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-medium transition-colors shadow-lg shadow-indigo-500/20">
+            Create Session
+        </a>
+    {% endif %}
+</div>
+
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    {% for session in sessions %}
+        <div class="glass-card rounded-xl overflow-hidden hover:bg-white/5 transition-colors group flex flex-col">
+            <div class="p-6 border-b border-gray-700">
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="w-10 h-10 rounded-full bg-gray-700 overflow-hidden">
+                        {% if session.mentor.avatar %}
+                            <img src="{{ session.mentor.avatar.url }}" class="w-full h-full object-cover">
+                        {% else %}
+                            <div class="w-full h-full flex items-center justify-center font-bold">{{ session.mentor.username|slice:":1"|upper }}</div>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-white text-sm">{{ session.mentor.get_full_name }}</h3>
+                        <p class="text-xs text-gray-500">{{ session.mentor.role|title }}</p>
+                    </div>
+                </div>
+                <h2 class="text-xl font-bold text-white mb-2">
+                    <a href="{% url 'session_detail' pk=session.pk %}" class="hover:text-indigo-400 transition-colors">{{ session.title }}</a>
+                </h2>
+                <div class="flex items-center gap-2 text-xs font-medium mb-3">
+                    <span class="px-2 py-0.5 rounded bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 capitalize">{{ session.session_type }}</span>
+                    {% if session.is_available %}
+                        <span class="px-2 py-0.5 rounded bg-green-500/10 text-green-400 border border-green-500/20">Available</span>
+                    {% else %}
+                        <span class="px-2 py-0.5 rounded bg-red-500/10 text-red-400 border border-red-500/20">Full</span>
+                    {% endif %}
+                </div>
+                <p class="text-gray-400 text-sm line-clamp-2">{{ session.description }}</p>
+            </div>
+            <div class="p-4 bg-gray-900/30 mt-auto flex items-center justify-between">
+                <div class="flex flex-col text-xs text-gray-500">
+                    <span class="flex items-center gap-1"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg> {{ session.scheduled_at|date:"M d, Y" }}</span>
+                    <span class="flex items-center gap-1 mt-1"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> {{ session.scheduled_at|time:"h:i A" }} ({{ session.duration }} mins)</span>
+                </div>
+                <a href="{% url 'session_detail' pk=session.pk %}" class="px-4 py-2 rounded-lg bg-white/5 hover:bg-white/10 text-white text-xs font-bold transition-colors">Details</a>
+            </div>
+        </div>
+    {% empty %}
+        <p class="col-span-full text-center text-gray-500 py-12">No upcoming sessions available.</p>
+    {% endfor %}
+</div>
+{% endblock %}

@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+<div class="mb-8">
+    <h1 class="text-3xl font-bold text-white mb-2">Alumni Network</h1>
+    <p class="text-gray-400">Connect with successful graduates for mentorship and guidance.</p>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+    <!-- Filters -->
+    <div class="lg:col-span-1">
+        <div class="glass-card p-6 rounded-xl sticky top-24">
+            <h3 class="font-bold text-white mb-4">Filters</h3>
+            <form method="get" class="space-y-4">
+                <div>
+                    <label class="text-sm text-gray-400 block mb-1">Search</label>
+                    <input type="text" name="q" value="{{ query }}" placeholder="Name, company, or skills..." class="w-full bg-gray-800 border-gray-700 rounded-lg text-white text-sm focus:ring-indigo-500">
+                </div>
+                <div>
+                    <label class="text-sm text-gray-400 block mb-1">Industry</label>
+                    <select name="industry" class="w-full bg-gray-800 border-gray-700 rounded-lg text-white text-sm focus:ring-indigo-500">
+                        <option value="">All Industries</option>
+                        {% for i in industries %}
+                            <option value="{{ i }}" {% if industry == i %}selected{% endif %}>{{ i }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <button type="submit" class="w-full py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-medium transition-colors">Apply Filters</button>
+                {% if query or industry %}
+                    <a href="{% url 'alumni_list' %}" class="block text-center text-sm text-gray-500 hover:text-white mt-2">Clear Filters</a>
+                {% endif %}
+            </form>
+        </div>
+    </div>
+
+    <!-- Alumni Grid -->
+    <div class="lg:col-span-3">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+            {% for alum in alumni %}
+                <div class="glass-card rounded-xl overflow-hidden hover:bg-white/5 transition-colors group">
+                    <div class="p-6 text-center border-b border-gray-700">
+                        <div class="w-20 h-20 mx-auto rounded-full bg-gradient-to-tr from-indigo-500 to-purple-500 p-0.5 mb-4 group-hover:scale-105 transition-transform">
+                            {% if alum.user.avatar %}
+                                <img src="{{ alum.user.avatar.url }}" class="w-full h-full rounded-full object-cover border-2 border-gray-900">
+                            {% else %}
+                                <div class="w-full h-full rounded-full bg-gray-800 flex items-center justify-center font-bold text-xl">{{ alum.user.username|slice:":1"|upper }}</div>
+                            {% endif %}
+                        </div>
+                        <h3 class="font-bold text-white text-lg">{{ alum.user.get_full_name }}</h3>
+                        <p class="text-indigo-400 text-sm">{{ alum.designation }}</p>
+                        <p class="text-gray-500 text-xs mt-1">at {{ alum.company }}</p>
+                    </div>
+                    <div class="p-4 bg-gray-900/30">
+                        <div class="flex flex-wrap gap-2 justify-center mb-4">
+                            {% for skill in alum.get_expertise_list|slice:":3" %}
+                                <span class="px-2 py-1 rounded text-xs bg-gray-800 text-gray-300 border border-gray-700">{{ skill }}</span>
+                            {% endfor %}
+                        </div>
+                        <a href="{% url 'alumni_detail' pk=alum.pk %}" class="block w-full py-2 rounded-lg border border-indigo-500/30 text-indigo-300 hover:bg-indigo-500/10 text-center text-sm font-medium transition-colors">View Profile</a>
+                    </div>
+                </div>
+            {% empty %}
+                <div class="col-span-full text-center py-12 text-gray-500">
+                    No alumni found matching your criteria.
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}
