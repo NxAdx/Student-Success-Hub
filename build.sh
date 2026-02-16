@@ -20,3 +20,7 @@ python manage.py collectstatic --no-input
 # Apply database migrations
 echo "Applying database migrations..."
 python manage.py migrate
+
+# Create superuser if needed
+echo 'Checking/Creating superuser...'
+python create_superuser.py
