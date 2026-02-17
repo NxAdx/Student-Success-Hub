@@ -117,15 +117,7 @@ Apply migrations to create the database schema.
 python manage.py migrate
 ```
 
-### 8. Populate Sample Data (Optional)
-To quickly set up the project with a demo user, hackathons, and roadmaps, run:
-```bash
-python populate_sample_data.py
-```
-*   **Demo User**: `student_demo`
-*   **Password**: `demo123`
-
-### 9. Run the Development Server
+### 8. Run the Development Server
 You need to run two processes: one for Tailwind CSS (to compile styles) and one for the Django server.
 
 
@@ -140,6 +132,7 @@ python manage.py runserver
 ```
 
 Access the application at: `http://127.0.0.1:8000/`
+
 
 ## 🚀 Deployment
 
@@ -166,7 +159,8 @@ We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for deta
 
 ## 📄 License
 
-[MIT License](LICENSE) (or specify your license)
+[MIT License](LICENSE)
+
 
 ## 📸 Screenshots
 
@@ -190,5 +184,5 @@ We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for deta
 | **Support Group** | ![Support Group](docs/screenshots/support_group.png) |
 | **Doubts (Q&A)** | ![Doubts](docs/screenshots/doubts.png) |
 
-*(Note: Please ensure the screenshot files are saved in `docs/screenshots/` with the filenames above)*
+
 
