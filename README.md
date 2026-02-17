@@ -4,6 +4,16 @@
 
 **Student Success Hub** is a comprehensive platform designed to empower students in their academic and professional journey. It bridges the gap between students, alumni, and resources, fostering a collaborative environment for growth and success.
 
+## 📖 Table of Contents
+
+*   [Features](#-features)
+*   [Tech Stack](#-tech-stack)
+*   [Project Structure](#-project-structure)
+*   [Installation & Setup](#-installation--setup-local-development)
+*   [Deployment](#-deployment)
+*   [Contributing](#-contributing)
+*   [License](#-license)
+*   [Screenshots](#-screenshots)
 
 ## 🚀 Features
 
@@ -107,7 +117,15 @@ Apply migrations to create the database schema.
 python manage.py migrate
 ```
 
-### 8. Run the Development Server
+### 8. Populate Sample Data (Optional)
+To quickly set up the project with a demo user, hackathons, and roadmaps, run:
+```bash
+python populate_sample_data.py
+```
+*   **Demo User**: `student_demo`
+*   **Password**: `demo123`
+
+### 9. Run the Development Server
 You need to run two processes: one for Tailwind CSS (to compile styles) and one for the Django server.
 
 
@@ -123,7 +141,34 @@ python manage.py runserver
 
 Access the application at: `http://127.0.0.1:8000/`
 
-## � Screenshots
+## 🚀 Deployment
+
+This project is configured for easy deployment on **Render.com**.
+
+1.  Create a new Web Service on Render.
+2.  Connect your GitHub repository.
+3.  Render should automatically detect the `render.yaml` or `Procfile`.
+4.  **Environment Variables**: Add these in the Render dashboard:
+    *   `PYTHON_VERSION`: `3.11.6`
+    *   `SECRET_KEY`: (Generate a strong random key)
+    *   `WEB_CONCURRENCY`: `4`
+
+> **⚠️ Important Note on Render Free Tier:**
+> Render's free web services have an **ephemeral filesystem**. This means that any files uploaded by users (profile pictures, hackathon images, etc.) will be **deleted** every time the app restarts or redeploys.
+> For production, you should configure AWS S3 or another cloud storage service for handling media files.
+
+## 🤝 Contributing
+
+We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for details on how to:
+- Set up your development environment.
+- Create branches and Pull Requests.
+- **Add Collaborators** to the repository.
+
+## 📄 License
+
+[MIT License](LICENSE) (or specify your license)
+
+## 📸 Screenshots
 
 | **Home Page** | ![Home](docs/screenshots/home.png) |
 | **Login / Sign Up** | ![Login](docs/screenshots/login.png) |
@@ -145,29 +190,5 @@ Access the application at: `http://127.0.0.1:8000/`
 | **Support Group** | ![Support Group](docs/screenshots/support_group.png) |
 | **Doubts (Q&A)** | ![Doubts](docs/screenshots/doubts.png) |
 
-
-
 *(Note: Please ensure the screenshot files are saved in `docs/screenshots/` with the filenames above)*
 
-## �🚀 Deployment
-
-This project is configured for easy deployment on **Render.com**.
-
-1.  Create a new Web Service on Render.
-2.  Connect your GitHub repository.
-3.  Render should automatically detect the `render.yaml` or `Procfile`.
-4.  **Environment Variables**: Add these in the Render dashboard:
-    *   `PYTHON_VERSION`: `3.11.6`
-    *   `SECRET_KEY`: (Generate a strong random key)
-    *   `WEB_CONCURRENCY`: `4`
-
-## 🤝 Contributing
-
-We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for details on how to:
-- Set up your development environment.
-- Create branches and Pull Requests.
-- **Add Collaborators** to the repository.
-
-## 📄 License
-
-[MIT License](LICENSE) (or specify your license)
