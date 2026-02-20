@@ -34,6 +34,7 @@
 *   **Frontend**: HTML5, Tailwind CSS, JavaScript
 *   **Database**: SQLite (Development) / PostgreSQL (Production)
 *   **Styling**: `django-tailwind` (Tailwind CSS)
+*   **Media Storage**: Cloudinary (Production)
 *   **Deployment**: Ready for Render.com
 
 ## 📂 Project Structure
@@ -145,10 +146,12 @@ This project is configured for easy deployment on **Render.com**.
     *   `PYTHON_VERSION`: `3.11.6`
     *   `SECRET_KEY`: (Generate a strong random key)
     *   `WEB_CONCURRENCY`: `4`
+    *   `CLOUDINARY_CLOUD_NAME`: (From your Cloudinary dashboard)
+    *   `CLOUDINARY_API_KEY`: (From your Cloudinary dashboard)
+    *   `CLOUDINARY_API_SECRET`: (From your Cloudinary dashboard)
 
-> **⚠️ Important Note on Render Free Tier:**
-> Render's free web services have an **ephemeral filesystem**. This means that any files uploaded by users (profile pictures, hackathon images, etc.) will be **deleted** every time the app restarts or redeploys.
-> For production, you should configure AWS S3 or another cloud storage service for handling media files.
+> **🚀 Note on Media Storage:**
+> This project uses **Cloudinary** for persistent media storage. Unlike Render's ephemeral filesystem, Cloudinary ensures that user-uploaded files (like profile pictures and thumbnails) are saved permanently even after redeployments.
 
 ## 🤝 Contributing
 
