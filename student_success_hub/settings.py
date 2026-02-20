@@ -156,7 +156,6 @@ USE_TZ = True
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [
     BASE_DIR / 'static',
-    BASE_DIR / 'theme' / 'static',
 ]
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
@@ -180,10 +179,9 @@ if not DEBUG:
         "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",
     }
     STORAGES["staticfiles"] = {
-        "BACKEND": "whitenoise.storage.CompressedStaticFilesStorage",
+        "BACKEND": "whitenoise.storage.StaticFilesStorage",
     }
     WHITENOISE_MANIFEST_STRICT = False
-    WHITENOISE_KEEP_ONLY_HASHED_FILES = False
 
     CLOUDINARY_STORAGE = {
         'CLOUD_NAME': os.environ.get('CLOUDINARY_CLOUD_NAME'),
