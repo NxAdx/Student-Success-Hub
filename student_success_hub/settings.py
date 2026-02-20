@@ -177,7 +177,7 @@ if not DEBUG:
         "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",
     }
     STORAGES["staticfiles"] = {
-        "BACKEND": "whitenoise.storage.CompressedStaticFilesStorage",
+        "BACKEND": "whitenoise.storage.StaticFilesStorage",
     }
     WHITENOISE_MANIFEST_STRICT = False
 
