@@ -177,7 +177,7 @@ if not DEBUG:
         "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",
     }
     STORAGES["staticfiles"] = {
-        "BACKEND": "whitenoise.storage.StaticFilesStorage",
+        "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
     }
     WHITENOISE_MANIFEST_STRICT = False
 
