@@ -24,3 +24,7 @@ python manage.py migrate
 # Create superuser if needed
 echo 'Checking/Creating superuser...'
 python create_superuser.py
+
+# Final production check
+echo 'Running final production check...'
+python manage.py check --deploy
