@@ -37,7 +37,8 @@
                         <span class="px-3 py-1 rounded-full bg-black/60 backdrop-blur-sm text-white text-xs font-medium capitalize">{{ hackathon.difficulty }}</span>
                     </div>
                 </div>
-                <div class="p-6 md:w-2/3 flex flex-col">
+                <div class="p-4 md:p-6 md:w-2/3 flex flex-col">
+
                     <div class="flex items-center justify-between mb-2">
                         <span class="text-indigo-400 text-sm font-medium">{{ hackathon.start_date|date:"M d" }} - {{ hackathon.end_date|date:"M d, Y" }}</span>
                          {% if hackathon.is_active %}

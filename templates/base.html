@@ -29,7 +29,9 @@
             border-color: rgba(75, 85, 99, 0.5) !important; /* border-gray-600/50 */
             color: #ffffff !important;
             border-radius: 0.5rem; /* rounded-lg */
+            font-size: 1rem !important; /* 16px to prevent iOS zoom */
         }
+
         
         input:focus, select:focus, textarea:focus {
             outline: none !important;
@@ -58,7 +60,8 @@
 
     {% include 'navbar.html' %}
 
-    <main class="flex-grow container mx-auto px-4 py-8">
+    <main class="flex-grow container mx-auto px-4 py-6 md:py-8">
+
         {% if messages %}
             <div class="mb-6 space-y-2">
                 {% for message in messages %}
