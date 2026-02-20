@@ -35,6 +35,8 @@
 *   **Database**: SQLite (Development) / PostgreSQL (Production)
 *   **Styling**: `django-tailwind` (Tailwind CSS)
 *   **Media Storage**: Cloudinary (Production)
+*   **Security**: SSL redirection, HSTS, Secure Cookies, and Clickjacking protection
+*   **Reliability**: Custom 404/500 pages and structured production logging
 *   **Deployment**: Ready for Render.com
 
 ## 📂 Project Structure
@@ -152,6 +154,18 @@ This project is configured for easy deployment on **Render.com**.
 
 > **🚀 Note on Media Storage:**
 > This project uses **Cloudinary** for persistent media storage. Unlike Render's ephemeral filesystem, Cloudinary ensures that user-uploaded files (like profile pictures and thumbnails) are saved permanently even after redeployments.
+
+## 🛡️ Production Reliability & Security
+
+The platform is built with professional-grade security and reliability features out of the box:
+
+-   **Automatic SSL/HTTPS**: All traffic is automatically redirected to HTTPS in production using Django's security middleware.
+-   **HSTS (HTTP Strict Transport Security)**: Configured to enforce HTTPS for all browser sessions, improving defense against protocol downgrade attacks.
+-   **Secure Cookies**: Session and CSRF cookies are marked as `Secure` and `HttpOnly` in production to prevent theft and hijacking.
+-   **Clickjacking Protection**: All pages are protected against clickjacking attacks using the `X-Frame-Options: DENY` header.
+-   **Custom Error Pages**: Professional 404 (Not Found) and 500 (Server Error) pages are provided to ensure a seamless user experience even when things go wrong.
+-   **Structured Logging**: Production logging is automatically configured to help you monitor and troubleshoot your application through the Render dashboard.
+-   **Deployment Guards**: The build script (`build.sh`) includes a `check --deploy` command that verifies your settings for production readiness before every deployment.
 
 ## 🤝 Contributing
 
