@@ -6,16 +6,28 @@ set -o errexit
 pip install -r requirements.txt
 
 # Build Tailwind CSS
-# We need to install npm dependencies first
 echo "Building Tailwind..."
 cd theme/static_src
 npm install
 npm run build
 cd ../..
 
+# Verify Tailwind build output
+echo "Checking for compiled CSS..."
+if [ -f "theme/static/css/dist/styles.css" ]; then
+    echo "Tailwind CSS built successfully."
+else
+    echo "ERROR: Tailwind CSS file not found at theme/static/css/dist/styles.css"
+    # Don't exit yet, let's see what else is there
+    ls -R theme/static
+fi
+
 # Collect static files
 echo "Collecting static files..."
-python manage.py collectstatic --no-input --clear
+python manage.py collectstatic --no-input --clear -v 2
+
+echo "Contents of staticfiles directory:"
+ls -R staticfiles || echo "staticfiles directory does not exist!"
 
 # Apply database migrations
 echo "Applying database migrations..."
