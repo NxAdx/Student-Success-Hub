@@ -18,7 +18,6 @@ if [ -f "theme/static/css/dist/styles.css" ]; then
     echo "Tailwind CSS built successfully."
 else
     echo "ERROR: Tailwind CSS file not found at theme/static/css/dist/styles.css"
-    # Don't exit yet, let's see what else is there
     ls -R theme/static
 fi
 
@@ -26,10 +25,7 @@ fi
 echo "Collecting static files..."
 rm -rf staticfiles
 mkdir -p staticfiles
-python manage.py collectstatic --no-input --clear -v 2
-
-echo "Contents of staticfiles directory after collection:"
-ls -R staticfiles | head -n 20
+python manage.py collectstatic --no-input --clear
 
 # Apply database migrations
 echo "Applying database migrations..."
@@ -42,3 +38,5 @@ python create_superuser.py
 # Final production check
 echo 'Running final production check...'
 python manage.py check --deploy
+
+echo 'Build complete!'

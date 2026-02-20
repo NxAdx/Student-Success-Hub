@@ -13,8 +13,8 @@ services:
         value: "4"
       - key: DATABASE_URL
         fromDatabase:
-          name: student-success-hub-db
-          property: connectionString
+          name: "student-success-hub-db"
+          property: "connectionString"
 
 databases:
   - name: student-success-hub-db
