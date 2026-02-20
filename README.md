@@ -1,6 +1,6 @@
 # Student Success Hub
 
-[![Render](https://img.shields.io/badge/Render-Live_Demo-46E3B7?style=for-the-badge&logo=render&logoColor=white)](https://sudent-success-hub.onrender.com/)
+[![Render](https://img.shields.io/badge/Render-Live_Demo-46E3B7?style=for-the-badge&logo=render&logoColor=white)](https://student-success-hub.onrender.com/)
 
 **Student Success Hub** is a comprehensive platform designed to empower students in their academic and professional journey. It bridges the gap between students, alumni, and resources, fostering a collaborative environment for growth and success.
 
