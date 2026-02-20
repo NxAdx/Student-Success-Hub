@@ -180,9 +180,10 @@ if not DEBUG:
         "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",
     }
     STORAGES["staticfiles"] = {
-        "BACKEND": "whitenoise.storage.StaticFilesStorage",
+        "BACKEND": "whitenoise.storage.CompressedStaticFilesStorage",
     }
     WHITENOISE_MANIFEST_STRICT = False
+    WHITENOISE_KEEP_ONLY_HASHED_FILES = False
 
     CLOUDINARY_STORAGE = {
         'CLOUD_NAME': os.environ.get('CLOUDINARY_CLOUD_NAME'),

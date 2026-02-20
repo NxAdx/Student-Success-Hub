@@ -24,7 +24,11 @@ fi
 
 # Collect static files
 echo "Collecting static files..."
+mkdir -p staticfiles
 python manage.py collectstatic --no-input --clear -v 2
+
+echo "Contents of staticfiles directory after collection:"
+ls -R staticfiles || echo "staticfiles directory is still empty!"
 
 echo "Contents of staticfiles directory:"
 ls -R staticfiles || echo "staticfiles directory does not exist!"
