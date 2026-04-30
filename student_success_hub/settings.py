@@ -48,7 +48,6 @@ if not DEBUG:
 # Application definition
 
 INSTALLED_APPS = [
-    'cloudinary_storage',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -60,6 +59,7 @@ INSTALLED_APPS = [
     'crispy_forms',
     'crispy_tailwind',
     'tailwind',
+    'cloudinary_storage',
     'cloudinary',
     # Local apps
     'accounts',
