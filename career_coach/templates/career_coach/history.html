@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+
+{% block title %}Chat History — AI Career Coach{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <div class="flex items-center justify-between mb-8">
+        <div class="flex items-center gap-3">
+            <a href="{% url 'career_coach:chat' %}" class="text-gray-400 hover:text-white">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+            </a>
+            <h1 class="text-2xl font-bold text-white">Chat History</h1>
+        </div>
+        <a href="{% url 'career_coach:chat' %}" class="px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium transition-colors">
+            + New Chat
+        </a>
+    </div>
+
+    {% if conversations %}
+    <div class="space-y-3">
+        {% for convo in conversations %}
+        <a href="{% url 'career_coach:chat' %}?conversation={{ convo.pk }}" class="block glass-card rounded-xl p-4 hover:bg-white/10 transition-colors group">
+            <div class="flex items-center justify-between">
+                <div class="flex-grow min-w-0">
+                    <h3 class="font-medium text-white truncate group-hover:text-emerald-400 transition-colors">{{ convo.title|default:"Untitled Conversation" }}</h3>
+                    <div class="flex items-center gap-3 mt-1 text-xs text-gray-500">
+                        <span>{{ convo.updated_at|timesince }} ago</span>
+                        <span class="px-1.5 py-0.5 rounded bg-gray-800 text-gray-400">{{ convo.provider }}</span>
+                        <span>{{ convo.messages.count }} messages</span>
+                    </div>
+                </div>
+                <svg class="w-5 h-5 text-gray-600 group-hover:text-emerald-400 transition-colors flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="text-center py-20">
+        <div class="w-16 h-16 rounded-full bg-gray-800 flex items-center justify-center mx-auto mb-4">
+            <svg class="w-8 h-8 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
+        </div>
+        <h2 class="text-lg font-bold text-white mb-2">No conversations yet</h2>
+        <p class="text-gray-400 text-sm mb-6">Start chatting with your Career Coach to see history here.</p>
+        <a href="{% url 'career_coach:chat' %}" class="px-6 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-medium transition-colors">Start a Conversation</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

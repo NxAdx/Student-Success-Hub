@@ -1,0 +1,121 @@
+{% extends 'base.html' %}
+
+{% block title %}AI Career Coach — Student Success Hub{% endblock %}
+
+{% block content %}
+<div class="relative overflow-hidden">
+    <!-- Hero Section -->
+    <div class="relative z-10 pt-16 pb-24 lg:pt-24 lg:pb-32 text-center">
+        <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-sm font-medium mb-8">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+            AI-Powered Career Guidance
+        </div>
+        <h1 class="text-4xl md:text-6xl font-bold tracking-tight mb-6">
+            <span class="text-white">Your Personal</span><br>
+            <span class="bg-clip-text text-transparent bg-gradient-to-r from-emerald-400 via-teal-400 to-cyan-400">AI Career Coach</span>
+        </h1>
+        <p class="text-lg text-gray-400 max-w-2xl mx-auto mb-10 leading-relaxed">
+            Get personalized career advice, resume reviews, interview prep, and professional guidance — powered by advanced AI. No login required to start.
+        </p>
+        <div class="flex flex-col sm:flex-row justify-center gap-4">
+            <a href="{% url 'career_coach:chat' %}" class="px-8 py-4 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-lg transition-all shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/40 hover:scale-105 flex items-center justify-center gap-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
+                Start Chatting
+            </a>
+            <a href="{% url 'career_coach:faq' %}" class="px-8 py-4 rounded-xl border border-gray-700 hover:bg-gray-800 text-gray-300 font-medium text-lg transition-all">
+                Browse FAQ
+            </a>
+        </div>
+    </div>
+
+    <!-- Background Blobs -->
+    <div class="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full pointer-events-none -z-10">
+        <div class="absolute top-20 left-1/4 w-96 h-96 bg-emerald-500/8 rounded-full blur-3xl"></div>
+        <div class="absolute top-40 right-1/4 w-96 h-96 bg-teal-500/8 rounded-full blur-3xl"></div>
+    </div>
+</div>
+
+<!-- Features Grid -->
+<div class="py-16">
+    <div class="text-center mb-12">
+        <h2 class="text-2xl md:text-4xl font-bold text-white mb-4">What Can Your Coach Help With?</h2>
+        <p class="text-gray-400 max-w-xl mx-auto">Focused exclusively on career guidance — no distractions, just actionable advice.</p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 px-4">
+        <div class="glass-card p-6 rounded-2xl hover:bg-white/10 transition-colors group">
+            <div class="w-12 h-12 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+            </div>
+            <h3 class="text-lg font-bold text-white mb-2">Resume & CV</h3>
+            <p class="text-gray-400 text-sm leading-relaxed">Get your resume reviewed, optimized, and tailored for specific roles and industries.</p>
+        </div>
+
+        <div class="glass-card p-6 rounded-2xl hover:bg-white/10 transition-colors group">
+            <div class="w-12 h-12 rounded-xl bg-teal-500/20 text-teal-400 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z"></path></svg>
+            </div>
+            <h3 class="text-lg font-bold text-white mb-2">Interview Prep</h3>
+            <p class="text-gray-400 text-sm leading-relaxed">Practice behavioral and technical questions with AI-powered mock interview scenarios.</p>
+        </div>
+
+        <div class="glass-card p-6 rounded-2xl hover:bg-white/10 transition-colors group">
+            <div class="w-12 h-12 rounded-xl bg-cyan-500/20 text-cyan-400 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l5.447 2.724A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"></path></svg>
+            </div>
+            <h3 class="text-lg font-bold text-white mb-2">Career Strategy</h3>
+            <p class="text-gray-400 text-sm leading-relaxed">Plan career transitions, discover growth paths, and set professional milestones.</p>
+        </div>
+    </div>
+</div>
+
+<!-- How It Works -->
+<div class="py-16">
+    <h2 class="text-2xl md:text-3xl font-bold text-white text-center mb-12">How It Works</h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto px-4">
+        <div class="glass-card rounded-2xl p-6 border-l-4 border-emerald-500">
+            <h3 class="text-white font-bold mb-2 flex items-center gap-2">
+                <span class="w-8 h-8 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-sm font-bold">1</span>
+                With Account <span class="text-emerald-400 text-xs">(Recommended)</span>
+            </h3>
+            <ul class="text-gray-400 text-sm space-y-2 ml-10">
+                <li>✓ Save your API key securely (encrypted)</li>
+                <li>✓ Full conversation history saved</li>
+                <li>✓ Resume conversations anytime</li>
+                <li>✓ Higher rate limits (60 msgs/hour)</li>
+            </ul>
+        </div>
+        <div class="glass-card rounded-2xl p-6 border-l-4 border-gray-600">
+            <h3 class="text-white font-bold mb-2 flex items-center gap-2">
+                <span class="w-8 h-8 rounded-full bg-gray-700 text-gray-300 flex items-center justify-center text-sm font-bold">2</span>
+                Guest Mode
+            </h3>
+            <ul class="text-gray-400 text-sm space-y-2 ml-10">
+                <li>✓ No account needed — instant access</li>
+                <li>✓ Bring your own API key</li>
+                <li>✗ No chat history saved</li>
+                <li>✗ Key stored in browser only</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<!-- FAQ Preview -->
+{% if faqs %}
+<div class="py-16">
+    <div class="flex items-center justify-between mb-8 px-4">
+        <h2 class="text-2xl font-bold text-white">Common Career Questions</h2>
+        <a href="{% url 'career_coach:faq' %}" class="text-sm text-emerald-400 hover:text-emerald-300">View All →</a>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 px-4">
+        {% for faq in faqs %}
+        <div class="glass-card rounded-xl p-5 hover:bg-white/10 transition-colors">
+            <h4 class="text-white font-medium mb-2">{{ faq.question }}</h4>
+            <p class="text-gray-400 text-sm line-clamp-2">{{ faq.answer|truncatechars:120 }}</p>
+            <span class="inline-block mt-2 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-emerald-500/10 text-emerald-400">{{ faq.get_category_display }}</span>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+{% endblock %}

@@ -71,6 +71,7 @@ INSTALLED_APPS = [
     'chat',
     'dashboard',
     'roadmaps',
+    'career_coach',
     'theme',
 ]
 
@@ -98,6 +99,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'career_coach.middleware.CareerCoachRateLimitMiddleware',
 ]
 
 ROOT_URLCONF = 'student_success_hub.urls'
@@ -238,3 +240,8 @@ LOGGING = {
         },
     },
 }
+
+# Career Coach AI Settings
+CAREER_COACH_OPENROUTER_MODEL = 'meta-llama/llama-4-scout'
+CAREER_COACH_NVIDIA_MODEL = 'meta/llama-3.3-70b-instruct'
+SITE_URL = os.environ.get('SITE_URL', 'https://student-success-hub.onrender.com')

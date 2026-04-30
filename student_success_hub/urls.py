@@ -16,6 +16,7 @@ urlpatterns = [
     path('chat/', include('chat.urls')),
     path('dashboard/', include('dashboard.urls')),
     path('roadmaps/', include('roadmaps.urls')),
+    path('career-coach/', include('career_coach.urls')),
 ]
 
 from django.urls import re_path

@@ -1,0 +1,402 @@
+{% extends 'base.html' %}
+
+{% block title %}Chat — AI Career Coach{% endblock %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto h-[calc(100vh-8rem)] flex flex-col" x-data="careerCoach()">
+
+    <!-- Header -->
+    <div class="flex items-center justify-between mb-4">
+        <div class="flex items-center gap-3">
+            <a href="{% url 'career_coach:landing' %}" class="text-gray-400 hover:text-white">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+            </a>
+            <div class="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-lg shadow-emerald-500/20">
+                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+            </div>
+            <div>
+                <h1 class="text-lg font-bold text-white">Career Coach</h1>
+                <p class="text-xs text-gray-400 flex items-center gap-1">
+                    <span class="w-2 h-2 rounded-full" :class="hasKey ? 'bg-emerald-500' : 'bg-yellow-500'"></span>
+                    <span x-text="hasKey ? (provider === 'openrouter' ? 'OpenRouter' : 'NVIDIA NIM') : 'No API Key'"></span>
+                </p>
+            </div>
+        </div>
+        <div class="flex items-center gap-2">
+            <button @click="startNewChat()" class="p-2 text-gray-400 hover:text-white rounded-lg hover:bg-gray-800 transition-colors" title="New Chat">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+            </button>
+            <button @click="showSettings = true" class="p-2 text-gray-400 hover:text-white rounded-lg hover:bg-gray-800 transition-colors" title="Settings">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+            </button>
+        </div>
+    </div>
+
+    <!-- Main Chat Area -->
+    <div class="flex-grow bg-gray-800/50 backdrop-blur-xl border border-gray-700/50 rounded-2xl overflow-hidden flex flex-col">
+
+        <!-- Messages -->
+        <div class="flex-grow p-4 md:p-6 overflow-y-auto space-y-4" id="chat-messages" x-ref="messagesContainer">
+
+            <!-- Welcome State -->
+            <template x-if="messages.length === 0">
+                <div class="flex flex-col items-center justify-center h-full text-center px-4">
+                    <div class="w-16 h-16 rounded-full bg-gradient-to-br from-emerald-500/20 to-teal-500/20 border border-emerald-500/30 flex items-center justify-center mb-4">
+                        <svg class="w-8 h-8 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                    </div>
+                    <h2 class="text-xl font-bold text-white mb-2">Hi! I'm your Career Coach 👋</h2>
+                    <p class="text-gray-400 text-sm mb-6 max-w-md">Ask me anything about careers, resumes, interviews, skills, or professional growth.</p>
+
+                    <!-- Starter Questions -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 w-full max-w-lg">
+                        <button @click="sendMessage('Help me write a professional resume')" class="text-left p-3 rounded-xl border border-gray-700 hover:border-emerald-500/50 hover:bg-emerald-500/5 transition-colors text-sm text-gray-300">
+                            📄 Help me write a resume
+                        </button>
+                        <button @click="sendMessage('How should I prepare for a technical interview?')" class="text-left p-3 rounded-xl border border-gray-700 hover:border-emerald-500/50 hover:bg-emerald-500/5 transition-colors text-sm text-gray-300">
+                            🎯 Prepare for an interview
+                        </button>
+                        <button @click="sendMessage('What skills should I learn to become a software engineer?')" class="text-left p-3 rounded-xl border border-gray-700 hover:border-emerald-500/50 hover:bg-emerald-500/5 transition-colors text-sm text-gray-300">
+                            🚀 Skills to learn for tech
+                        </button>
+                        <button @click="sendMessage('How do I negotiate a better salary offer?')" class="text-left p-3 rounded-xl border border-gray-700 hover:border-emerald-500/50 hover:bg-emerald-500/5 transition-colors text-sm text-gray-300">
+                            💰 Negotiate salary
+                        </button>
+                    </div>
+                </div>
+            </template>
+
+            <!-- Chat Messages -->
+            <template x-for="(msg, i) in messages" :key="i">
+                <div class="flex flex-col" :class="msg.role === 'user' ? 'items-end' : 'items-start'">
+                    <div class="max-w-[85%] md:max-w-[70%] rounded-2xl px-4 py-3 shadow-sm"
+                         :class="msg.role === 'user' ? 'bg-indigo-600 text-white rounded-tr-none' : 'bg-gray-700 text-gray-200 rounded-tl-none'">
+                        <div class="text-sm leading-relaxed whitespace-pre-wrap" x-html="msg.role === 'assistant' ? renderMarkdown(msg.content) : msg.content"></div>
+                    </div>
+                    <div class="flex items-center gap-2 mt-1 px-1">
+                        <span class="text-[10px] text-gray-500" x-text="msg.time || ''"></span>
+                        <template x-if="msg.role === 'assistant'">
+                            <button @click="copyMessage(msg.content)" class="text-gray-600 hover:text-gray-400 transition-colors" title="Copy">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+                            </button>
+                        </template>
+                    </div>
+                </div>
+            </template>
+
+            <!-- Typing Indicator -->
+            <template x-if="isLoading">
+                <div class="flex items-start">
+                    <div class="bg-gray-700 rounded-2xl rounded-tl-none px-4 py-3">
+                        <div class="flex gap-1">
+                            <span class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay:0ms"></span>
+                            <span class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay:150ms"></span>
+                            <span class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay:300ms"></span>
+                        </div>
+                    </div>
+                </div>
+            </template>
+
+            <!-- Error State -->
+            <template x-if="errorMessage">
+                <div class="flex justify-center">
+                    <div class="bg-red-500/10 border border-red-500/30 rounded-xl px-4 py-3 text-sm text-red-400 flex items-center gap-2">
+                        <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        <span x-text="errorMessage"></span>
+                        <button @click="retryLast()" class="ml-2 underline hover:text-red-300">Retry</button>
+                    </div>
+                </div>
+            </template>
+        </div>
+
+        <!-- Input -->
+        <div class="p-4 bg-gray-800 border-t border-gray-700">
+            <form @submit.prevent="handleSubmit()" class="flex gap-3">
+                <div class="flex-grow relative">
+                    <input type="text" x-model="inputMessage" x-ref="chatInput"
+                           placeholder="Ask about careers, resumes, interviews..."
+                           class="w-full bg-gray-900 border-gray-600 rounded-xl text-white px-4 py-3 focus:ring-emerald-500 focus:border-emerald-500 pr-12 text-base"
+                           :disabled="isLoading"
+                           maxlength="2000"
+                           @keydown.ctrl.enter="handleSubmit()">
+                </div>
+                <button type="submit" :disabled="isLoading || !inputMessage.trim()"
+                        class="p-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 disabled:bg-gray-700 disabled:cursor-not-allowed text-white transition-colors shadow-lg">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
+                </button>
+            </form>
+            <p class="text-[10px] text-gray-600 mt-2 text-center">Career Coach gives career advice only. Responses may not always be accurate.</p>
+        </div>
+    </div>
+
+    <!-- API Key Modal -->
+    <div x-show="showKeyModal" class="fixed inset-0 z-50 flex items-center justify-center px-4" style="display:none">
+        <div class="absolute inset-0 bg-black/80 backdrop-blur-sm" @click="showKeyModal = false"></div>
+        <div class="bg-gray-900 rounded-2xl w-full max-w-md p-6 relative z-10 border border-gray-800 shadow-2xl" x-transition>
+            <h3 class="text-xl font-bold text-white mb-2">Connect Your AI Provider</h3>
+            <p class="text-gray-400 text-sm mb-6">Enter your free API key to start chatting.</p>
+
+            <!-- Provider Tabs -->
+            <div class="flex gap-2 mb-4">
+                <button @click="provider = 'openrouter'" class="flex-1 py-2 rounded-lg text-sm font-medium transition-colors"
+                        :class="provider === 'openrouter' ? 'bg-emerald-600 text-white' : 'bg-gray-800 text-gray-400 hover:bg-gray-700'">
+                    OpenRouter
+                </button>
+                <button @click="provider = 'nvidia'" class="flex-1 py-2 rounded-lg text-sm font-medium transition-colors"
+                        :class="provider === 'nvidia' ? 'bg-emerald-600 text-white' : 'bg-gray-800 text-gray-400 hover:bg-gray-700'">
+                    NVIDIA NIM
+                </button>
+            </div>
+
+            <!-- Key Input -->
+            <div class="relative mb-4">
+                <input :type="showKeyText ? 'text' : 'password'" x-model="keyInput"
+                       :placeholder="provider === 'openrouter' ? 'sk-or-...' : 'nvapi-...'"
+                       class="w-full bg-gray-800 border-gray-700 rounded-lg text-white px-4 py-3 pr-10 text-sm">
+                <button @click="showKeyText = !showKeyText" type="button" class="absolute right-3 top-3.5 text-gray-500 hover:text-white">
+                    <svg x-show="!showKeyText" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                    <svg x-show="showKeyText" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.542-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.542 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"></path></svg>
+                </button>
+            </div>
+
+            <!-- Info -->
+            <div class="bg-gray-800/50 rounded-lg p-3 mb-4 text-xs text-gray-400">
+                <template x-if="provider === 'openrouter'">
+                    <p>Get a free key at <a href="https://openrouter.ai/keys" target="_blank" class="text-emerald-400 hover:underline">openrouter.ai/keys</a> — Free models available.</p>
+                </template>
+                <template x-if="provider === 'nvidia'">
+                    <p>Get a free key at <a href="https://build.nvidia.com" target="_blank" class="text-emerald-400 hover:underline">build.nvidia.com</a> — Free tier included.</p>
+                </template>
+            </div>
+
+            {% if user.is_authenticated %}
+            <label class="flex items-center gap-2 text-sm text-gray-400 mb-4 cursor-pointer">
+                <input type="checkbox" x-model="saveKey" class="rounded bg-gray-800 border-gray-600 text-emerald-500 focus:ring-emerald-500">
+                Save key for future sessions (encrypted)
+            </label>
+            {% else %}
+            <p class="text-xs text-yellow-500/80 mb-4">⚠ Guest mode — key stored in browser memory only, not saved.</p>
+            {% endif %}
+
+            <!-- Actions -->
+            <div class="flex gap-3">
+                <button @click="showKeyModal = false" class="flex-1 py-2 rounded-lg bg-gray-800 text-gray-300 hover:bg-gray-700 transition-colors">Cancel</button>
+                <button @click="submitKey()" :disabled="!keyInput.trim() || isValidating"
+                        class="flex-1 py-2 rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 disabled:bg-gray-700 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2">
+                    <template x-if="isValidating">
+                        <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+                    </template>
+                    <span x-text="isValidating ? 'Validating...' : 'Connect'"></span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div x-show="showSettings" class="fixed inset-0 z-50 flex items-center justify-center px-4" style="display:none">
+        <div class="absolute inset-0 bg-black/80 backdrop-blur-sm" @click="showSettings = false"></div>
+        <div class="bg-gray-900 rounded-2xl w-full max-w-sm p-6 relative z-10 border border-gray-800 shadow-2xl" x-transition>
+            <h3 class="text-lg font-bold text-white mb-4">Settings</h3>
+            <div class="space-y-3">
+                <button @click="showKeyModal = true; showSettings = false" class="w-full text-left p-3 rounded-lg hover:bg-gray-800 text-gray-300 transition-colors flex items-center justify-between">
+                    <span>Change API Key</span>
+                    <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                </button>
+                {% if user.is_authenticated %}
+                <a href="{% url 'career_coach:history' %}" class="w-full text-left p-3 rounded-lg hover:bg-gray-800 text-gray-300 transition-colors flex items-center justify-between block">
+                    <span>Chat History</span>
+                    <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                </a>
+                {% endif %}
+                <a href="{% url 'career_coach:faq' %}" class="w-full text-left p-3 rounded-lg hover:bg-gray-800 text-gray-300 transition-colors flex items-center justify-between block">
+                    <span>Career FAQ</span>
+                    <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                </a>
+            </div>
+            <button @click="showSettings = false" class="mt-4 w-full py-2 rounded-lg bg-gray-800 text-gray-300 hover:bg-gray-700 transition-colors">Close</button>
+        </div>
+    </div>
+</div>
+
+<script>
+function careerCoach() {
+    const isAuthenticated = {{ user.is_authenticated|yesno:"true,false" }};
+    const csrfToken = '{{ csrf_token }}';
+    const savedProvider = '{{ provider|default:"" }}';
+    const hasSavedKey = {{ has_key|yesno:"true,false" }};
+
+    return {
+        messages: [],
+        inputMessage: '',
+        isLoading: false,
+        errorMessage: '',
+        hasKey: hasSavedKey || !!sessionStorage.getItem('cc_api_key'),
+        provider: savedProvider || sessionStorage.getItem('cc_provider') || 'openrouter',
+        conversationId: null,
+        showKeyModal: false,
+        showSettings: false,
+        keyInput: '',
+        showKeyText: false,
+        saveKey: isAuthenticated,
+        isValidating: false,
+        lastUserMessage: '',
+
+        init() {
+            // Show key modal if no key
+            if (!this.hasKey) {
+                this.$nextTick(() => { this.showKeyModal = true; });
+            }
+            // Focus input
+            this.$nextTick(() => { if (this.$refs.chatInput) this.$refs.chatInput.focus(); });
+        },
+
+        async submitKey() {
+            if (!this.keyInput.trim()) return;
+            this.isValidating = true;
+
+            if (isAuthenticated && this.saveKey) {
+                // Save to server
+                try {
+                    const res = await fetch('{% url "career_coach:save_key" %}', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
+                        body: JSON.stringify({ provider: this.provider, api_key: this.keyInput })
+                    });
+                    const data = await res.json();
+                    if (!res.ok) { alert(data.error || 'Failed to save key'); this.isValidating = false; return; }
+                } catch (e) { alert('Network error'); this.isValidating = false; return; }
+            } else {
+                // Store in sessionStorage (guest)
+                sessionStorage.setItem('cc_api_key', this.keyInput);
+                sessionStorage.setItem('cc_provider', this.provider);
+            }
+
+            this.hasKey = true;
+            this.showKeyModal = false;
+            this.keyInput = '';
+            this.isValidating = false;
+        },
+
+        async sendMessage(text) {
+            const msg = text || this.inputMessage.trim();
+            if (!msg || this.isLoading) return;
+
+            if (!this.hasKey) { this.showKeyModal = true; return; }
+
+            this.inputMessage = '';
+            this.errorMessage = '';
+            this.lastUserMessage = msg;
+
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+
+            this.messages.push({ role: 'user', content: msg, time: timeStr });
+            this.scrollToBottom();
+            this.isLoading = true;
+
+            const payload = {
+                message: msg,
+                provider: this.provider,
+                conversation_id: this.conversationId,
+            };
+
+            // For guests, include API key and history
+            if (!isAuthenticated) {
+                payload.api_key = sessionStorage.getItem('cc_api_key') || '';
+                payload.history = this.messages.filter(m => !m.blocked).map(m => ({role: m.role, content: m.content}));
+            }
+
+            try {
+                const res = await fetch('{% url "career_coach:chat_api" %}', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await res.json();
+                this.isLoading = false;
+
+                if (res.status === 429) {
+                    this.errorMessage = 'Rate limit reached. Please wait a moment.';
+                    return;
+                }
+                if (res.status === 401) {
+                    this.hasKey = false;
+                    sessionStorage.removeItem('cc_api_key');
+                    this.showKeyModal = true;
+                    this.errorMessage = 'Invalid API key. Please enter a valid key.';
+                    return;
+                }
+                if (!res.ok && !data.content) {
+                    this.errorMessage = data.error || 'Something went wrong.';
+                    return;
+                }
+
+                const replyTime = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                this.messages.push({
+                    role: 'assistant',
+                    content: data.content,
+                    time: replyTime,
+                    blocked: data.blocked || false,
+                });
+
+                if (data.conversation_id) this.conversationId = data.conversation_id;
+                this.scrollToBottom();
+            } catch (e) {
+                this.isLoading = false;
+                this.errorMessage = 'Network error. Check your connection.';
+            }
+        },
+
+        handleSubmit() { this.sendMessage(); },
+
+        retryLast() {
+            this.errorMessage = '';
+            if (this.lastUserMessage) {
+                // Remove the last user message to re-send
+                if (this.messages.length && this.messages[this.messages.length - 1].role === 'user') {
+                    this.messages.pop();
+                }
+                this.sendMessage(this.lastUserMessage);
+            }
+        },
+
+        startNewChat() {
+            this.messages = [];
+            this.conversationId = null;
+            this.errorMessage = '';
+            this.inputMessage = '';
+        },
+
+        copyMessage(content) {
+            navigator.clipboard.writeText(content).catch(() => {});
+        },
+
+        renderMarkdown(text) {
+            if (!text) return '';
+            // Basic markdown: bold, italic, lists, line breaks
+            return text
+                .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+                .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\*(.+?)\*/g, '<em>$1</em>')
+                .replace(/^- (.+)$/gm, '• $1')
+                .replace(/^(\d+)\. (.+)$/gm, '$1. $2')
+                .replace(/\n/g, '<br>');
+        },
+
+        scrollToBottom() {
+            this.$nextTick(() => {
+                const container = this.$refs.messagesContainer;
+                if (container) container.scrollTop = container.scrollHeight;
+            });
+        },
+    };
+}
+</script>
+
+<style>
+@keyframes bounce {
+    0%, 80%, 100% { transform: translateY(0); }
+    40% { transform: translateY(-6px); }
+}
+</style>
+{% endblock %}

@@ -10,3 +10,6 @@ psycopg2-binary
 requests
 cloudinary
 django-cloudinary-storage
+cryptography>=42.0
+markdown>=3.6
+bleach>=6.0

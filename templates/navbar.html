@@ -40,6 +40,11 @@
                             Roadmaps
                             <span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-indigo-500 transition-all group-hover:w-full"></span>
                         </a>
+                        <a href="{% url 'career_coach:landing' %}" class="text-sm font-medium text-gray-300 hover:text-white transition-colors relative group flex items-center gap-1">
+                            <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                            Career Coach
+                            <span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-emerald-500 transition-all group-hover:w-full"></span>
+                        </a>
                     {% endif %}
                 </div>
 
@@ -143,6 +148,10 @@
             <a href="{% url 'chat_list' %}" class="block text-gray-300 hover:text-white py-2 px-3 rounded-lg hover:bg-white/5 active:bg-white/10 active:scale-95 transition-all flex justify-between items-center">
                 Messages
                 <span id="mobile-msg-badge" class="bg-indigo-500 text-white text-[10px] px-1.5 rounded-full" style="display:none">0</span>
+            </a>
+            <a href="{% url 'career_coach:landing' %}" class="block text-gray-300 hover:text-white py-2 px-3 rounded-lg hover:bg-white/5 active:bg-white/10 active:scale-95 transition-all flex items-center gap-2">
+                <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                Career Coach
             </a>
             
             <div class="border-t border-gray-800 pt-2 mt-2">

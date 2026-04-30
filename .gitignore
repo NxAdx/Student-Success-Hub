@@ -17,3 +17,7 @@ staticfiles/
 # Node
 node_modules/
 npm-debug.log
+
+# Docs & Agent (local only)
+docs/
+.agents/
