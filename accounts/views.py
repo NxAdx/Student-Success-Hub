@@ -93,7 +93,7 @@ def save_avatar_view(request):
                     seed = 'avatar'
                     if 'seed=' in avatar_url:
                         seed = avatar_url.split('seed=')[1].split('&')[0]
-                    file_name = f"avatar_{request.user.username}_{seed}.png"
+                    file_name = f"avatar_{request.user.username}_{seed}.svg"
                     request.user.avatar.save(file_name, ContentFile(response.content), save=True)
                     messages.success(request, 'Avatar updated successfully! 🎉')
                 else:
